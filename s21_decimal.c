@@ -88,7 +88,7 @@ int main ( ) {
 
 
     printf("%d + %d = %d\n", value_1.bits[0], value_2.bits[0], result_plus.bits[0]);
-    printf("%s\n\n", inside(result_plus));
+    printf("Сложение\n%s\n\n", inside(result_plus));
     printf("%d - %d = %d\n", value_1.bits[0], value_2.bits[0], result_minus.bits[0]);
     printf("%s\n\n", inside(result_minus));
 
@@ -136,8 +136,9 @@ int pow_int(int x, int y) {
 /* Функция определения двух последних цифр - Андрей */
 
 int last_number(s21_decimal dst) {
+    dst = {{123, 123, 123, 0}};
     int x = 0;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 32; j++) {
             if ((dst.bits[i] & (1 << j)) != 0) {
                 x += (1 << j) % 10;
@@ -243,44 +244,66 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     return 0;
 }
 
+// inside - Эдуард
+
+// char* inside(s21_decimal dst) {
+//     char *str = malloc(140);
+//     int bit = 0;
+//     for(int i = 0; i < 4; i++) {
+//         for(int j = 0; j < 32; j++) {
+//             str[bit++] = ((dst.bits[i] >> j) & 1) + '0';
+//         }
+//         str[bit++] = '\n';
+//     }
+//     str[bit] = '\0';
+//     char ch = ' ';
+//     for(int j = 0, i = 31; i > j;) {
+//         ch = str[j];
+//         str[j++] = str[i];
+//         str[i--] = ch;
+//     }
+//     str[32] = '\n';
+//     for(int j = 33, i = 64; i > j;) {
+//         ch = str[j];
+//         str[j++] = str[i];
+//         str[i--] = ch;
+//     }
+//     str[65] = '\n';
+//     for(int j = 66, i = 97; i > j;) {
+//         ch = str[j];
+//         str[j++] = str[i];
+//         str[i--] = ch;
+//     }
+//     str[98] = '\n';
+//     for(int j = 99, i = 130; i > j;) {
+//         ch = str[j];
+//         str[j++] = str[i];
+//         str[i--] = ch;
+//     }
+//     str[131] = '\0';
+
+//     return str;
+// }
+
+// inside - Андрей
+
 char* inside(s21_decimal dst) {
-    char *str = malloc(140);
-    int bit = 0;
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 32; j++) {
-            str[bit++] = ((dst.bits[i] >> j) & 1) + '0';
-        }
-        str[bit++] = '\n';
-    }
-    str[bit] = '\0';
-    char ch = ' ';
-    for(int j = 0, i = 31; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[32] = '\n';
-    for(int j = 33, i = 64; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[65] = '\n';
-    for(int j = 66, i = 97; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[98] = '\n';
-    for(int j = 99, i = 130; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[131] = '\0';
     
+    char* str = (char*)malloc(140 * sizeof(char));
+    int str_index = 0;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 31; j >= 0; j--) {   
+            str[str_index++] = ((dst.bits[i] >> j) & 1) + '0';
+        }
+        str[str_index++] = '\n';
+    }
+    
+    str[str_index] = '\0';
+
     return str;
 }
+
 
 
 

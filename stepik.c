@@ -77,8 +77,8 @@ int main ( ) {
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = 22278;
-    int x2 = 112;
+    int x = 3;
+    int x2 = 1;
     //float y = 0.00000000000000000000000000000001;
     float y = -123.0;
     //float y = -0.00000000000000000000000001305961231313;
@@ -130,30 +130,35 @@ int pow_int(int x, int y) {
   return result;
 }
 
-/* Функция определения одной последней цифры - Эдуард */
-
-// int last_number(s21_decimal dst) {
-//     int x = 0, tmp = 1;
-//     for(int i = 0; i < 96; i++) {
-//         if((dst.bits[i / 32] >> (i % 32)) & 1) x = (x + tmp) % 100;   
-//         tmp = (tmp * 2) % 100;
-//     }
-//     return x;
-// }
-
-/* Функция определения двух последних цифр - Андрей */
+/* Функция определения двух последних цифр - Эдуард */
 
 int last_number(s21_decimal dst) {
-    int x = 0;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 32; j++) {
-            if ((dst.bits[i] & (1 << j)) != 0) {
-                x += (1 << j) % 10;
-            }
-        }
+    int x = 0, tmp = 1;
+    for(int i = 0; i < 96; i++) {
+        if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % 100; 
+    //  if ((dst.bits[i / 32] >> i) != 0)
+    //  if ((dst.bits[i / 32] >> i % 32) != 0)
+    //  есть несколько вариантов записи верхнего условия
+        tmp = (tmp * 2) % 100;
     }
     return x;
 }
+
+/* Функция определения двух последних цифр - Андрей */
+// Не работает с 22278 и если число огромное(больше чем 1 инт)
+
+// int last_number(s21_decimal dst) {
+//     int x = 0;
+//     for (int i = 0; i < 4; i++) {
+//         for (int j = 0; j < 32; j++) {
+//             printf("%d  \n",  ((dst.bits[0] & (1 << i)) ));
+//             if ((dst.bits[i] & (1 << j)) != 0) {
+//                 x += (1 << j) % 10;
+//             }
+//         }
+//     }
+//     return x;
+// }
 
 int degree(s21_decimal dst) {
     char z = 0;

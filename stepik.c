@@ -77,8 +77,8 @@ int main ( ) {
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = 3;
-    int x2 = 3;
+    int x = -3;
+    int x2 = 2;
     //float y = 0.00000000000000000000000000000001;
     float y = -123.0;
     //float y = -0.00000000000000000000000001305961231313;
@@ -178,43 +178,32 @@ int comparison(s21_decimal value_1, s21_decimal value_2) {
         flag |= (x == y && x != 0 && y != 0) ? 1 << 4 : 0 << 4;
         flag |= (x != y) ? 1 << 5 : 0 << 5;
     }  
+    if (!flag) flag |= 1 << 4;
     return flag;
 }
 
-int s21_is_less(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 0) & 1) flag = 1;
-    return flag;
+int s21_is_less(s21_decimal value_1, s21_decimal value_2) {
+    return ((comparison(value_1, value_2) >> 0) & 1);
 }    
 
 int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 1)  & 1) flag = 1;
-    return flag;
+    return ((comparison(value_1, value_2) >> 1) & 1);
 }   
 
 int s21_is_greater(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 2)  & 1) flag = 1;
-    return flag;
+    return ((comparison(value_1, value_2) >> 2) & 1);
 }    
 
 int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 3)  & 1) flag = 1;
-    return flag;
+    return ((comparison(value_1, value_2) >> 3) & 1);
 }   
 
 int s21_is_equal(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 4)  & 1) flag = 1;
-    return flag;
+    return ((comparison(value_1, value_2) >> 4) & 1);
 }  
 
 int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2){
-    int flag = 0;
-    if ((comparison(value_1, value_2) >> 5)  & 1) flag = 1;
-    return flag;
+    return ((comparison(value_1, value_2) >> 5) & 1);
 }
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus) {

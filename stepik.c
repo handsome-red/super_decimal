@@ -77,15 +77,16 @@ int main ( ) {
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = -3;
-    int x2 = 2;
+    int x = 7;
+    int x2 = 6;
     //float y = 0.00000000000000000000000000000001;
     float y = -123.0;
     //float y = -0.00000000000000000000000001305961231313;
 
     s21_from_int_to_decimal(x, &value_1);
     s21_from_int_to_decimal(x2, &value_2);
-    //value_1.bits[1] = 3;
+    // value_1.bits[1] = 4;
+    // value_2.bits[1] = 4;
     s21_add(value_1, value_2, &result_plus);
     s21_sub(value_1, value_2, &result_minus);
     
@@ -171,14 +172,11 @@ int comparison(s21_decimal value_1, s21_decimal value_2) {
     for (int i = 2; i >= 0 && !flag; i--) {
         int x = (check_sign(value_1)) ? -value_1.bits[i] : value_1.bits[i];
         int y = (check_sign(value_2)) ? -value_2.bits[i] : value_2.bits[i];
-        flag |= (x < y) ? 1 << 0 : 0 << 0;
-        flag |= (x <= y && x != 0 && y != 0) ? 1 << 1 : 0 << 1;
-        flag |= (x > y) ? 1 << 2 : 0 << 2;
-        flag |= (x >= y && x != 0 && y != 0 ) ? 1 << 3 : 0 << 3;
-        flag |= (x == y && x != 0 && y != 0) ? 1 << 4 : 0 << 4;
+        flag |= (x < y) ? 3 << 0 : 0 << 0;
+        flag |= (x > y) ? 3 << 2 : 0 << 2;
         flag |= (x != y) ? 1 << 5 : 0 << 5;
     }  
-    if (!flag) flag |= 1 << 4;
+    if (!flag) flag = 26;
     return flag;
 }
 

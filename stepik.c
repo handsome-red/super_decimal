@@ -7,6 +7,7 @@ typedef struct {
     unsigned int bits[4];
 } s21_decimal;
 
+
 //Арифметические операторы
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  +
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  -
@@ -54,10 +55,8 @@ int s21_negate(s21_decimal value, s21_decimal *result_plus);
 
 
 
-//  Мои дополнительные функции:
+//  Дополнительные функции:
 
-int pow_int(int x, int y); 
-//  Функция возведение в степень
 char* inside(s21_decimal dst);
 //  Функция перевода битов в понятный вид
 int check_sign(s21_decimal dst);
@@ -66,6 +65,7 @@ int degree(s21_decimal dst);
 //  Функция вытаскивания степени из децимала
 int last_number(s21_decimal dst);
 //  Функция определения последней цифры для округления
+int comparison(s21_decimal value_1, s21_decimal value_2);
 
 
 int main ( ) {
@@ -78,7 +78,7 @@ int main ( ) {
     s21_decimal result_minus = {0};
 
     int x = 3;
-    int x2 = 1;
+    int x2 = 3;
     //float y = 0.00000000000000000000000000000001;
     float y = -123.0;
     //float y = -0.00000000000000000000000001305961231313;
@@ -114,8 +114,13 @@ int main ( ) {
     printf("%de%+d\n\n",dst_y.bits[0], degree(dst_y));
 
     puts("Функции сравнения:");
-    printf("%d %c %d\n\n", value_1.bits[0], (s21_is_less(value_1, value_2)) ? '<' : 0, value_2.bits[0]);
-
+    printf("%d %s %d\n\n", x, (s21_is_less(value_1, value_2)) ? "< " : "  ", x2);
+    printf("%d %s %d\n\n", x, (s21_is_less_or_equal(value_1, value_2)) ? "<=" : "  ", x2);
+    printf("%d %s %d\n\n", x, (s21_is_greater(value_1, value_2)) ? "> " : "  ", x2);
+    printf("%d %s %d\n\n", x, (s21_is_greater_or_equal(value_1, value_2)) ? ">=" : "  ", x2);
+    printf("%d %s %d\n\n", x, (s21_is_equal(value_1, value_2)) ? "==" : "  ", x2);
+    printf("%d %s %d\n\n", x, (s21_is_not_equal(value_1, value_2)) ? "!=" : "  ", x2);
+    
     puts("Функция определения последних двух цифр для округления:");
     printf(" Число: %d \n Последние две цифры: %d\n\n", value_1.bits[0], last_number(value_1));
     return 0;
@@ -130,35 +135,14 @@ int pow_int(int x, int y) {
   return result;
 }
 
-/* Функция определения двух последних цифр - Эдуард */
-
 int last_number(s21_decimal dst) {
     int x = 0, tmp = 1;
     for(int i = 0; i < 96; i++) {
         if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % 100; 
-    //  if ((dst.bits[i / 32] >> i) != 0)
-    //  if ((dst.bits[i / 32] >> i % 32) != 0)
-    //  есть несколько вариантов записи верхнего условия
         tmp = (tmp * 2) % 100;
     }
     return x;
 }
-
-/* Функция определения двух последних цифр - Андрей */
-// Не работает с 22278 и если число огромное(больше чем 1 инт)
-
-// int last_number(s21_decimal dst) {
-//     int x = 0;
-//     for (int i = 0; i < 4; i++) {
-//         for (int j = 0; j < 32; j++) {
-//             printf("%d  \n",  ((dst.bits[0] & (1 << i)) ));
-//             if ((dst.bits[i] & (1 << j)) != 0) {
-//                 x += (1 << j) % 10;
-//             }
-//         }
-//     }
-//     return x;
-// }
 
 int degree(s21_decimal dst) {
     char z = 0;
@@ -182,42 +166,78 @@ int set_sign(int *src, s21_decimal *dst) {
     return flag;
 }
 
-
-int s21_is_less(s21_decimal value_1, s21_decimal value_2) {
+int comparison(s21_decimal value_1, s21_decimal value_2) {
     int flag = 0;
     for (int i = 2; i >= 0 && !flag; i--) {
         int x = (check_sign(value_1)) ? -value_1.bits[i] : value_1.bits[i];
         int y = (check_sign(value_2)) ? -value_2.bits[i] : value_2.bits[i];
-        flag = (x < y) ? 1 : 0;
+        flag |= (x < y) ? 1 << 0 : 0 << 0;
+        flag |= (x <= y && x != 0 && y != 0) ? 1 << 1 : 0 << 1;
+        flag |= (x > y) ? 1 << 2 : 0 << 2;
+        flag |= (x >= y && x != 0 && y != 0 ) ? 1 << 3 : 0 << 3;
+        flag |= (x == y && x != 0 && y != 0) ? 1 << 4 : 0 << 4;
+        flag |= (x != y) ? 1 << 5 : 0 << 5;
     }  
     return flag;
 }
 
-int s21_is_greater(s21_decimal value_1, s21_decimal value_2) {
+int s21_is_less(s21_decimal value_1, s21_decimal value_2){
     int flag = 0;
-    for (int i = 2; i >= 0 && !flag; i--) {
-        int x = (check_sign(value_1)) ? -value_1.bits[i] : value_1.bits[i];
-        int y = (check_sign(value_2)) ? -value_2.bits[i] : value_2.bits[i];
-        flag = (x > y) ? 1 : 0;
-    }  
+    if ((comparison(value_1, value_2) >> 0) & 1) flag = 1;
+    return flag;
+}    
+
+int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2){
+    int flag = 0;
+    if ((comparison(value_1, value_2) >> 1)  & 1) flag = 1;
+    return flag;
+}   
+
+int s21_is_greater(s21_decimal value_1, s21_decimal value_2){
+    int flag = 0;
+    if ((comparison(value_1, value_2) >> 2)  & 1) flag = 1;
+    return flag;
+}    
+
+int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2){
+    int flag = 0;
+    if ((comparison(value_1, value_2) >> 3)  & 1) flag = 1;
+    return flag;
+}   
+
+int s21_is_equal(s21_decimal value_1, s21_decimal value_2){
+    int flag = 0;
+    if ((comparison(value_1, value_2) >> 4)  & 1) flag = 1;
+    return flag;
+}  
+
+int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2){
+    int flag = 0;
+    if ((comparison(value_1, value_2) >> 5)  & 1) flag = 1;
     return flag;
 }
-
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus) {
+    int flag = 0;
     if(check_sign(value_1) && check_sign(value_2)) {
         result_plus -> bits[3] = (1 << 31);
+        flag = 1;
     }
-    int prev_ch = 0;  //previous_char
-    int cur_ch = 0;   //current_char
-    for (int i = 0; i < 96; i++) {
-        int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
-        int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
-        cur_ch = x ^ y ^ prev_ch;
-        result_plus -> bits[i / 32] |= (cur_ch << (i % 32));
-        prev_ch = (x + y + prev_ch > 1) ? 1 : 0;
-    }  
-    
+    if(!check_sign(value_1) && !check_sign(value_2)) {
+        flag = 1;
+    }
+    if (flag) {
+        int prev_ch = 0;  //previous_char
+        int cur_ch = 0;   //current_char
+        for (int i = 0; i < 96; i++) {
+            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
+            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
+            cur_ch = x ^ y ^ prev_ch;
+            result_plus -> bits[i / 32] |= (cur_ch << (i % 32));
+            prev_ch = (x + y + prev_ch > 1) ? 1 : 0;
+        }  
+    } else s21_sub(value_1, value_2, result_plus);
+
     return 0;
 }
 
@@ -267,40 +287,18 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
 }
 
 char* inside(s21_decimal dst) {
-    char *str = malloc(140);
-    int bit = 0;
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 32; j++) {
-            str[bit++] = ((dst.bits[i] >> j) & 1) + '0';
-        }
-        str[bit++] = '\n';
-    }
-    str[bit] = '\0';
-    char ch = ' ';
-    for(int j = 0, i = 31; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[32] = '\n';
-    for(int j = 33, i = 64; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[65] = '\n';
-    for(int j = 66, i = 97; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[98] = '\n';
-    for(int j = 99, i = 130; i > j;) {
-        ch = str[j];
-        str[j++] = str[i];
-        str[i--] = ch;
-    }
-    str[131] = '\0';
     
+    char* str = (char*)malloc(140 * sizeof(char));
+    int str_index = 0;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 31; j >= 0; j--) {   
+            str[str_index++] = ((dst.bits[i] >> j) & 1) + '0';
+        }
+        str[str_index++] = '\n';
+    }
+    
+    str[str_index] = '\0';
+
     return str;
 }

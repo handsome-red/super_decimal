@@ -9,16 +9,16 @@ typedef struct {
 
 
 //Арифметические операторы
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  +
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  -
-int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  *
-int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  :
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); //  +
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); //  -
+int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); //  *
+int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); //  :
 
 
 //Операторы сравнения
-int s21_is_less(s21_decimal value_1, s21_decimal value_2);                  //  <
-int s21_is_less_or_equal(s21_decimal value_1, s21_decimal value_2);         //  <=
-int s21_is_greater(s21_decimal value_1, s21_decimal value_2);               //  />
+int s21_is_less(s21_decimal, s21_decimal);                  //  <
+int s21_is_less_or_equal(s21_decimal, s21_decimal);         //  <=
+int s21_is_greater(s21_decimal, s21_decimal);               //  />
 int s21_is_greater_or_equal(s21_decimal, s21_decimal);                      //  />=
 int s21_is_equal(s21_decimal, s21_decimal);                                 //  ==
 int s21_is_not_equal(s21_decimal, s21_decimal);                             //  !=
@@ -44,13 +44,13 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst);                 //  
 // *Уточнение про преобразование из числа типа decimal в тип int:*
 // - *Если в числе типа decimal есть дробная часть, то её следует отбросить (например, 0.9 преобразуется 0)*.
 
-int s21_floor(s21_decimal value, s21_decimal *result_plus);
+int s21_floor(s21_decimal value, s21_decimal *result);
 //  Округляет указанное Decimal число до ближайшего целого числа в сторону отрицательной бесконечности
-int s21_round(s21_decimal value, s21_decimal *result_plus);
+int s21_round(s21_decimal value, s21_decimal *result);
 //  Округляет Decimal до ближайшего целого числа
-int s21_truncate(s21_decimal value, s21_decimal *result_plus);
+int s21_truncate(s21_decimal value, s21_decimal *result);
 //  Возвращает целые цифры указанного Decimal числа; любые дробные цифры отбрасываются, включая конечные нули.
-int s21_negate(s21_decimal value, s21_decimal *result_plus);
+int s21_negate(s21_decimal value, s21_decimal *result);
 //  Возвращает результат умножения указанного Decimal на -1.
 
 
@@ -77,16 +77,16 @@ int main ( ) {
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = 7;
-    int x2 = 6;
+    int x = 10;
+    int x2 = 10;
     //float y = 0.00000000000000000000000000000001;
     float y = -123.0;
     //float y = -0.00000000000000000000000001305961231313;
 
     s21_from_int_to_decimal(x, &value_1);
     s21_from_int_to_decimal(x2, &value_2);
-    // value_1.bits[1] = 4;
-    // value_2.bits[1] = 4;
+    //value_1.bits[1] = 2;
+    //value_2.bits[1] = 3;
     s21_add(value_1, value_2, &result_plus);
     s21_sub(value_1, value_2, &result_minus);
     
@@ -97,9 +97,9 @@ int main ( ) {
     printf("%s\n\n", inside(value_2));
 
 
-    printf("%d + %d = %d\n", value_1.bits[0], value_2.bits[0], result_plus.bits[0]);
+    printf("%+d + (%+d) = %c%d\n", x, x2, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
     printf("%s\n\n", inside(result_plus));
-    printf("%d - %d = %d\n", value_1.bits[0], value_2.bits[0], result_minus.bits[0]);
+    printf("%+d - (%+d) = %c%d\n", x, x2, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
     printf("%s\n\n", inside(result_minus));
 
     sprintf(str, "%e\n", y);
@@ -204,41 +204,51 @@ int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2){
     return ((comparison(value_1, value_2) >> 5) & 1);
 }
 
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus) {
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     int flag = 0;
-    if(check_sign(value_1) && check_sign(value_2)) {
-        result_plus -> bits[3] = (1 << 31);
-        flag = 1;
-    }
-    if(!check_sign(value_1) && !check_sign(value_2)) {
-        flag = 1;
-    }
+    //if (!s21_sub(value_1, value_2, result)) flag = 1;
+    
     if (flag) {
-        int prev_ch = 0;  //previous_char
-        int cur_ch = 0;   //current_char
+        int prev_ch = 0, cur_ch = 0;  //previous_char //current_char
         for (int i = 0; i < 96; i++) {
-            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
-            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
+            int x = ((value_1.bits[i / 32] >> i) & 1);
+            int y = ((value_2.bits[i / 32] >> i) & 1);
             cur_ch = x ^ y ^ prev_ch;
-            result_plus -> bits[i / 32] |= (cur_ch << (i % 32));
+            result -> bits[i / 32] |= (cur_ch << i);
             prev_ch = (x + y + prev_ch > 1) ? 1 : 0;
         }  
-    } else s21_sub(value_1, value_2, result_plus);
-
+    } 
     return 0;
 }
 
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus) {
-    //if(check_sign(value_2)) 
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+     int flag = 0;
+    // if (check_sign(value_1) && (check_sign(value_2))) {
+
+    //     //puts("101\n");
+    //     result -> bits[3] |= (1 << 31);
+    //     flag = 1;
+    // }
+    // if(!check_sign(value_1) && !check_sign(value_2)) {
+    //     flag = 1;
+    // }
+    
+    if (flag) {
         int prev_ch = 0;  //prev_char
         for (int i = 0; i < 96; i++) {
-            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
-            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
+            int x = ((value_1.bits[i / 32] >> i) & 1);
+            int y = ((value_2.bits[i / 32] >> i) & 1);
             x = (prev_ch == -1) ? abs(x - 1) : x;
             prev_ch = x - y;
-            result_plus -> bits[i / 32] |= (prev_ch) ? (1 << (i % 32)) : (0 << (i % 32));
-        }  
-    
+            result -> bits[i / 32] |= (prev_ch) ? (1 << i) : (0 << i);
+        }
+     } //else if (check_sign(value_1) && !check_sign(value_2)) {
+    //     result -> bits[3] |= (1 << 31);
+    //     s21_add(value_1, value_2, result);
+    // } else if (!check_sign(value_1) && check_sign(value_2) ) {
+    //     s21_add(value_1, value_2, result);
+    // }
+     
     return 0;
 }
 

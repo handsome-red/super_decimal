@@ -172,9 +172,8 @@ int comparison(s21_decimal value_1, s21_decimal value_2) {
     for (int i = 95; i >= 0 && !flag; i--) {
         int x = (check_sign(value_1)) ? -(value_1.bits[i / 32] >> i % 32): value_1.bits[i / 32] >> i % 32;
         int y = (check_sign(value_2)) ? -(value_2.bits[i / 32] >> i % 32): value_2.bits[i / 32] >> i % 32;
-        flag |= (x < y) ? 35 : 0;
-        flag |= (x > y) ? 44 : 0;
-        //flag |= (x != y) ? 1 << 5 : 0 << 5;
+        if (x < y) flag = 35;
+        if (x > y) flag = 44;
     }  
     if (!flag) flag = 26;
     return flag;

@@ -72,21 +72,21 @@ int main ( ) {
     char str[100] = {0};
     s21_decimal dst_y = {0};
 
-    s21_decimal value_1 = {0};
-    s21_decimal value_2 = {0};
+    s21_decimal value_1 = {0};//{{0xFFFFFFFF, 0, 0xFFFFFFFF, 0}};
+    s21_decimal value_2 = {0};//{{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = 10;
-    int x2 = 10;
+    int x = -1;
+    int x2 = 0;
     //float y = 0.00000000000000000000000000000001;
-    float y = -123.0;
+    float y = 24.004000004;
     //float y = -0.00000000000000000000000001305961231313;
 
     s21_from_int_to_decimal(x, &value_1);
     s21_from_int_to_decimal(x2, &value_2);
     //value_1.bits[1] = 2;
-    //value_2.bits[1] = 3;
+    // value_2.bits[1] = 3;
     s21_add(value_1, value_2, &result_plus);
     s21_sub(value_1, value_2, &result_minus);
     
@@ -169,12 +169,12 @@ int set_sign(int *src, s21_decimal *dst) {
 
 int comparison(s21_decimal value_1, s21_decimal value_2) {
     int flag = 0;
-    for (int i = 2; i >= 0 && !flag; i--) {
-        int x = (check_sign(value_1)) ? -value_1.bits[i] : value_1.bits[i];
-        int y = (check_sign(value_2)) ? -value_2.bits[i] : value_2.bits[i];
-        flag |= (x < y) ? 3 << 0 : 0 << 0;
-        flag |= (x > y) ? 3 << 2 : 0 << 2;
-        flag |= (x != y) ? 1 << 5 : 0 << 5;
+    for (int i = 95; i >= 0 && !flag; i--) {
+        int x = (check_sign(value_1)) ? -(value_1.bits[i / 32] >> i % 32): value_1.bits[i / 32] >> i % 32;
+        int y = (check_sign(value_2)) ? -(value_2.bits[i / 32] >> i % 32): value_2.bits[i / 32] >> i % 32;
+        flag |= (x < y) ? 35 : 0;
+        flag |= (x > y) ? 44 : 0;
+        //flag |= (x != y) ? 1 << 5 : 0 << 5;
     }  
     if (!flag) flag = 26;
     return flag;
@@ -211,10 +211,10 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     if (flag) {
         int prev_ch = 0, cur_ch = 0;  //previous_char //current_char
         for (int i = 0; i < 96; i++) {
-            int x = ((value_1.bits[i / 32] >> i) & 1);
-            int y = ((value_2.bits[i / 32] >> i) & 1);
+            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
+            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
             cur_ch = x ^ y ^ prev_ch;
-            result -> bits[i / 32] |= (cur_ch << i);
+            result -> bits[i / 32] |= (cur_ch << (i % 32));
             prev_ch = (x + y + prev_ch > 1) ? 1 : 0;
         }  
     } 
@@ -236,11 +236,11 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     if (flag) {
         int prev_ch = 0;  //prev_char
         for (int i = 0; i < 96; i++) {
-            int x = ((value_1.bits[i / 32] >> i) & 1);
-            int y = ((value_2.bits[i / 32] >> i) & 1);
+            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
+            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
             x = (prev_ch == -1) ? abs(x - 1) : x;
             prev_ch = x - y;
-            result -> bits[i / 32] |= (prev_ch) ? (1 << i) : (0 << i);
+            result -> bits[i / 32] |= (prev_ch) ? (1 << (i % 32)) : (0 << (i % 32));
         }
      } //else if (check_sign(value_1) && !check_sign(value_2)) {
     //     result -> bits[3] |= (1 << 31);
@@ -264,22 +264,22 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     char ch_num[30] = {0};
     char ch_degree[10] = {0};
     sprintf(ch_num, "%+e\n\n", src);
-    strncat(ch_degree, ch_num + 10, 3);
+    strncat(ch_degree, ch_num + 11, 3);
 
     for(int i = 2; i < 8; i++) {
         ch_num[i] = ch_num[i + 1];
     }
     ch_num[8] = '\0';
     int num = atoi(ch_num);
-    int degree = atoi(ch_degree) - 6;
+    int degree = -(atoi(ch_degree) - 6);
     set_sign(&num, dst);
     while(!(num % 10)) {
         num /= 10;
-        degree += 1;
+        degree -= 1;
     }
 
     dst -> bits[0] = num;
-    dst -> bits[3] |= (degree & 255) << 16;
+    dst -> bits[3] |= degree << 16;
     return 0;
 }
 

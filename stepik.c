@@ -66,6 +66,9 @@ int degree(s21_decimal dst);
 int last_number(s21_decimal dst);
 //  Функция определения последней цифры для округления
 int comparison(s21_decimal value_1, s21_decimal value_2);
+int unsigned_comparison(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
+void zero(s21_decimal *dst);
+void inside2(s21_decimal dst);
 
 
 int main ( ) {
@@ -77,11 +80,11 @@ int main ( ) {
     s21_decimal result_plus = {0};
     s21_decimal result_minus = {0};
 
-    int x = -1;
-    int x2 = 0;
+    int x = -30;
+    int x2 = 10;
     //float y = 0.00000000000000000000000000000001;
-    float y = 24.004000004;
-    //float y = -0.00000000000000000000000001305961231313;
+    //float y = 10.00;
+    float y = -0.003;
 
     s21_from_int_to_decimal(x, &value_1);
     s21_from_int_to_decimal(x2, &value_2);
@@ -102,6 +105,26 @@ int main ( ) {
     printf("%+d - (%+d) = %c%d\n", x, x2, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
     printf("%s\n\n", inside(result_minus));
 
+// for (int i = -30; i < 31; i ++) {
+//     zero(&result_minus);
+//     zero(&result_plus);
+// s21_from_int_to_decimal(i, &value_1);
+//     s21_from_int_to_decimal(10, &value_2);
+// s21_sub(value_1, value_2, &result_minus);
+//     printf("%+d - (%+d) = %c%d\n", i, 10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+// }
+    
+    
+// for (int i = -30; i < 31; i ++) {
+//     zero(&result_minus);
+//     zero(&result_plus);
+// s21_from_int_to_decimal(10, &value_1);
+//     s21_from_int_to_decimal(i, &value_2);
+// s21_sub(value_1, value_2, &result_minus);
+//     printf("%+d - (%+d) = %c%d\n", 10, i, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+// }
+
+
     sprintf(str, "%e\n", y);
     s21_from_float_to_decimal(y, &dst_y);
 
@@ -115,25 +138,149 @@ int main ( ) {
     printf("%de%+d\n\n",dst_y.bits[0], degree(dst_y));
 
     puts("Функции сравнения:");
-    printf("%d %s %d\n\n", x, (s21_is_less(value_1, value_2)) ? "< " : "  ", x2);
-    printf("%d %s %d\n\n", x, (s21_is_less_or_equal(value_1, value_2)) ? "<=" : "  ", x2);
-    printf("%d %s %d\n\n", x, (s21_is_greater(value_1, value_2)) ? "> " : "  ", x2);
-    printf("%d %s %d\n\n", x, (s21_is_greater_or_equal(value_1, value_2)) ? ">=" : "  ", x2);
-    printf("%d %s %d\n\n", x, (s21_is_equal(value_1, value_2)) ? "==" : "  ", x2);
-    printf("%d %s %d\n\n", x, (s21_is_not_equal(value_1, value_2)) ? "!=" : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_less(value_1, value_2)) ? "< " : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_less_or_equal(value_1, value_2)) ? "<=" : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_greater(value_1, value_2)) ? "> " : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_greater_or_equal(value_1, value_2)) ? ">=" : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_equal(value_1, value_2)) ? "==" : "  ", x2);
+    printf("%d %s %d\n", x, (s21_is_not_equal(value_1, value_2)) ? "!=" : "  ", x2);
     
     puts("Функция определения последних двух цифр для округления:");
     printf(" Число: %d \n Последние две цифры: %d\n\n", value_1.bits[0], last_number(value_1));
+
+
+    zero(&result_plus);
+    zero(&result_minus);
+    s21_from_int_to_decimal(10, &value_1);
+    s21_from_int_to_decimal(5, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", 10, 5, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(5, &value_1);
+    s21_from_int_to_decimal(10, &value_2);
+    s21_add(value_1, value_2, &result_plus);    
+    printf("%+d + (%+d) = %c%d\n", 5, 10, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(10, &value_1);
+    s21_from_int_to_decimal(-5, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", 10, -5, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(5, &value_1);
+    s21_from_int_to_decimal(-10, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", 5, -10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(10, &value_1);
+    s21_from_int_to_decimal(-5, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", 10, -5, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(10, &value_1);
+    s21_from_int_to_decimal(5, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", 10, 5, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(-5, &value_1);
+    s21_from_int_to_decimal(10, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", -5, 10, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(-5, &value_1);
+    s21_from_int_to_decimal(-10, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", -5, -10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(-10, &value_1);
+    s21_from_int_to_decimal(5, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", -10, 5, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(-10, &value_1);
+    s21_from_int_to_decimal(-5, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", -10, -5, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(5, &value_1);
+    s21_from_int_to_decimal(-10, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", 5, -10, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(5, &value_1);
+    s21_from_int_to_decimal(10, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", 5, 10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(-10, &value_1);
+    s21_from_int_to_decimal(-5, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", -10, -5, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(-10, &value_1);
+    s21_from_int_to_decimal(5, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", -10, 5, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+    zero(&result_plus);
+    s21_from_int_to_decimal(-5, &value_1);
+    s21_from_int_to_decimal(-10, &value_2);
+    s21_add(value_1, value_2, &result_plus);
+    printf("%+d + (%+d) = %c%d\n", -5, -10, (check_sign(result_plus)) ? '-' : '+', result_plus.bits[0]);
+    zero(&result_minus);
+    s21_from_int_to_decimal(-5, &value_1);
+    s21_from_int_to_decimal(10, &value_2);
+    s21_sub(value_1, value_2, &result_minus);
+    printf("%+d - (%+d) = %c%d\n", -5, 10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
+
+    // int z = 5;
+    // z = z << 4;
+    // printf("%d\n", z); 
+    s21_decimal result_mul = {0};
+    for(int i = 1; i < 11; i++) {
+        for(int j = 1; j < 11; j++) {
+            zero(&value_1);
+            zero(&value_2);
+            s21_from_int_to_decimal(i, &value_1);
+            s21_from_int_to_decimal(j, &value_2);
+            s21_mul(value_1, value_2, &result_mul);
+            printf(" %d ", result_mul.bits[0]);
+        }
+        puts("\n");
+    }
+    
+    inside2(result_mul);
+    
     return 0;
 }
 
-int pow_int(int x, int y) {
-    int result = 1;
-    while (y > 0) {
-        result *= x;
-    y--;
+// int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+
+//     return 0;
+// }
+
+int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    zero(result);
+    s21_decimal temp1 = {0};
+    s21_decimal temp2 = {0};
+    for (int i = 0; i < 96; i++) {
+        if ((value_2.bits[i / 32] >> i % 32) & 1) {
+            zero(&temp1);
+            zero(&temp2);
+            temp1.bits[i / 32] = value_1.bits[i / 32] << i % 32;
+            temp2 = *result;
+
+            zero(result);
+            s21_add(temp1, temp2, result);
+        }
     }
-  return result;
+    if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] = (1 << 31);
+    return 0;
+}
+
+
+void zero(s21_decimal *dst) {
+    for (int i = 0; i < 4; i++) {
+        dst -> bits[i] = 0;
+    }
 }
 
 int last_number(s21_decimal dst) {
@@ -203,11 +350,31 @@ int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2){
     return ((comparison(value_1, value_2) >> 5) & 1);
 }
 
+int unsigned_comparison(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    int flag = 0;
+
+    for (int i = 95; i >= 0 && flag == 0; i--) {
+        int x = (value_1.bits[i / 32] >> (i % 32) & 1);
+        int y = (value_2.bits[i / 32] >> (i % 32) & 1);
+        if (x > y) flag = 8;
+        if (x < y) flag = 16;
+    }  
+    if(flag == 16) flag ^= 16;
+
+    if (check_sign(value_1)) flag |= 4;
+    if (check_sign(value_2)) flag |= 1;
+    if (check_sign(*result)) flag |= 2;
+
+    return flag;
+}
+
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     int flag = 0;
-    //if (!s21_sub(value_1, value_2, result)) flag = 1;
-    
-    if (flag) {
+    flag = unsigned_comparison(value_1, value_2, result);
+    // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 0)
+    if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 0) {
+    //if (flag == 0 || flag == 8 || flag == 3 || flag == 5 || flag == 6 || flag == 11 || flag == 13 || flag == 14) {
+        
         int prev_ch = 0, cur_ch = 0;  //previous_char //current_char
         for (int i = 0; i < 96; i++) {
             int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
@@ -216,69 +383,78 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
             result -> bits[i / 32] |= (cur_ch << (i % 32));
             prev_ch = (x + y + prev_ch > 1) ? 1 : 0;
         }  
-    } 
+        result -> bits[3] = (0 << 31);
+        if (flag &= 4) result -> bits[3] = (1 << 31); //(check_sign(value_1) == 1)
+    } else {
+        result -> bits[3] ^= (1 << 31);
+        s21_sub(value_1, value_2, result);
+    }
+
     return 0;
 }
 
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
      int flag = 0;
-    // if (check_sign(value_1) && (check_sign(value_2))) {
-
-    //     //puts("101\n");
-    //     result -> bits[3] |= (1 << 31);
-    //     flag = 1;
-    // }
-    // if(!check_sign(value_1) && !check_sign(value_2)) {
-    //     flag = 1;
-    // }
-    
-    if (flag) {
+     result -> bits[3] ^= (1 << 31);
+     flag = unsigned_comparison(value_1, value_2, result);
+    // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 1)
+    if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 1) {
+    //if (flag == 1|| flag == 2 || flag == 4 || flag == 7 || flag == 9|| flag == 10 || flag == 12 || flag == 15) {
         int prev_ch = 0;  //prev_char
-        for (int i = 0; i < 96; i++) {
-            int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
-            int y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
-            x = (prev_ch == -1) ? abs(x - 1) : x;
+        for (int i = 0, x = 0, y = 0; i < 96; i++) {
+            if (flag >> 3 & 1) {
+                x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
+                y = ((value_2.bits[i / 32] >> (i % 32)) & 1);
+            } else {
+                x = ((value_2.bits[i / 32] >> (i % 32)) & 1);
+                y = ((value_1.bits[i / 32] >> (i % 32)) & 1);
+            }
+            //int x = ((flag >> 3) & 1) ? ((value_1.bits[i / 32] >> (i % 32)) & 1) : ((value_2.bits[i / 32] >> (i % 32)) & 1);
+            //int y = ((flag >> 3) & 1) ? ((value_2.bits[i / 32] >> (i % 32)) & 1) : ((value_1.bits[i / 32] >> (i % 32)) & 1);
+            if (prev_ch < 0) x -= 1;
             prev_ch = x - y;
-            result -> bits[i / 32] |= (prev_ch) ? (1 << (i % 32)) : (0 << (i % 32));
+            if (prev_ch && prev_ch != -2) result -> bits[i / 32] |= (1 << (i % 32));
+            //result -> bits[i / 32] |= (prev_ch && prev_ch != -2) ? (1 << (i % 32)) : (0 << (i % 32));
         }
-     } //else if (check_sign(value_1) && !check_sign(value_2)) {
-    //     result -> bits[3] |= (1 << 31);
-    //     s21_add(value_1, value_2, result);
-    // } else if (!check_sign(value_1) && check_sign(value_2) ) {
-    //     s21_add(value_1, value_2, result);
-    // }
-     
+        result -> bits[3] = (0 << 31);
+        if (flag < 3 || flag > 11) result -> bits[3] = (1 << 31); 
+        //if (flag == 1 || flag == 2 || flag == 12 || flag == 15) result -> bits[3] = (1 << 31); 
+     } else {
+        s21_add(value_1, value_2, result);
+     }
     return 0;
 }
 
 // Побитовые операции И ( & ), ИЛИ ( | ), ИСКЛЮЧАЮЩЕЕ ИЛИ ( ^ ), НЕ ( ~ )
 
 int s21_from_int_to_decimal(int src, s21_decimal *dst) {
+    zero(dst);
     set_sign(&src, dst);
     dst -> bits[0] = src;
     return 0; 
 }
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
+    zero(dst);
     char ch_num[30] = {0};
     char ch_degree[10] = {0};
     sprintf(ch_num, "%+e\n\n", src);
-    strncat(ch_degree, ch_num + 11, 3);
+    strncat(ch_degree, ch_num + 10, 3);
 
     for(int i = 2; i < 8; i++) {
         ch_num[i] = ch_num[i + 1];
     }
     ch_num[8] = '\0';
     int num = atoi(ch_num);
-    int degree = -(atoi(ch_degree) - 6);
+    int degree = atoi(ch_degree) - 6;
     set_sign(&num, dst);
     while(!(num % 10)) {
         num /= 10;
-        degree -= 1;
+        degree += 1;
     }
 
     dst -> bits[0] = num;
-    dst -> bits[3] |= degree << 16;
+    dst -> bits[3] |= abs(degree) << 16; 
     return 0;
 }
 
@@ -297,4 +473,12 @@ char* inside(s21_decimal dst) {
     str[str_index] = '\0';
 
     return str;
+}
+
+void inside2(s21_decimal dst) {
+    for(int i = 0; i <= 128; i++) {
+        if (i > 31 && i % 32 == 0) printf("   bits[%d]\n", i / 32 - 1);
+        if (i % 8 == 0) printf(" ");
+        if (i < 128)printf("%d", dst.bits[i / 32] >> (31 - i % 32) & 1);
+    }
 }

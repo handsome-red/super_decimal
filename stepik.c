@@ -66,9 +66,12 @@ int degree(s21_decimal dst);
 int last_number(s21_decimal dst);
 //  Функция определения последней цифры для округления
 int comparison(s21_decimal value_1, s21_decimal value_2);
-int unsigned_comparison(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
+int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);
+void mull_by_10(s21_decimal *dst);
+int occupied_bits(s21_decimal dst);
+void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
 
 
 int main ( ) {
@@ -247,25 +250,94 @@ int main ( ) {
         puts("\n");
     }
     
-    inside2(result_mul);
+
+    s21_decimal result_div = {0};
+    zero(&value_1);
+    zero(&value_2);
+    zero(&result_div);
+
+            s21_from_float_to_decimal(-30.3, &value_1);   
+            s21_from_int_to_decimal(-3, &value_2);
+            s21_div(value_1, value_2, &result_div);
+    
+    inside2(result_div);
     
     return 0;
 }
 
-// int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+void mull_by_10(s21_decimal *dst) {
+    s21_decimal ten = {0};
+    s21_from_int_to_decimal(10, &ten);
+    s21_mul(*dst, ten, dst);
+    dst -> bits[3] = (degree(*dst) + 1) << 16;
+}
 
-//     return 0;
-// }
+int occupied_bits(s21_decimal dst) {
+    int bit = 0;
+    for (int i = 95; i >= 0 && !bit; i--) {
+        if (dst.bits[i / 32] >> i & 1) bit = i;
+    }
+    return bit;
+}
+
+int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    s21_decimal temp1 = value_1;
+    s21_decimal temp2 = value_2;
+    temp1.bits[3] |= 0 << 31;
+    temp2.bits[3] |= 0 << 31;
+
+    //temp1.bits[1] |= 15 << 4;
+
+    while (unsigned_comparison(temp1, temp2) == 35) {
+        mull_by_10(&temp1);
+    }
+
+    printf("%d\n", occupied_bits(temp1));
+    printf("%d\n", occupied_bits(value_2));
+    int bit1 = occupied_bits(temp1);
+    int bit2 = occupied_bits(value_2);
+
+    s21_decimal temp1_1 = {0};
+    for (int i = bit1; i >= 0 && bit2 >= 0; i--) {
+        if ((temp1.bits[i / 32] >> i % 32) & 1) {
+            temp1_1.bits[bit2 / 32] |= 1 << bit2 % 32;
+        }
+         bit2--;
+    }
+
+    //temp1_1.bits[(bit1 - bit2) / 32] = temp1.bits[(bit1 - bit2) / 32] >> (bit1 - bit2) % 32;
+
+    inside2(temp1);
+    inside2(value_2);
+    inside2(temp1_1);
+    
+
+    // for (int i = 95; i >= 0; i++) {
+        
+    // }
+    *result = temp1;
+    
+    return 0; 
+}
+
+void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n) {
+    for (int i = 0; i < 96; i++) {
+        if ((dst2.bits[i / 32] >> i % 32) & 1) {
+            dst -> bits[(i + n) / 32] |= 1 << (i + n) % 32;
+        }
+    }
+}
 
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     zero(result);
     s21_decimal temp1 = {0};
     s21_decimal temp2 = {0};
+
     for (int i = 0; i < 96; i++) {
         if ((value_2.bits[i / 32] >> i % 32) & 1) {
             zero(&temp1);
             zero(&temp2);
-            temp1.bits[i / 32] = value_1.bits[i / 32] << i % 32;
+            incomplete_work(&temp1, value_1, i); 
             temp2 = *result;
 
             zero(result);
@@ -273,6 +345,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         }
     }
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] = (1 << 31);
+    result -> bits[3] = degree(value_1) << 16; 
     return 0;
 }
 
@@ -350,27 +423,33 @@ int s21_is_not_equal(s21_decimal value_1, s21_decimal value_2){
     return ((comparison(value_1, value_2) >> 5) & 1);
 }
 
-int unsigned_comparison(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+int unsigned_comparison(s21_decimal value_1, s21_decimal value_2) {
     int flag = 0;
-
     for (int i = 95; i >= 0 && flag == 0; i--) {
         int x = (value_1.bits[i / 32] >> (i % 32) & 1);
         int y = (value_2.bits[i / 32] >> (i % 32) & 1);
-        if (x > y) flag = 8;
-        if (x < y) flag = 16;
-    }  
-    if(flag == 16) flag ^= 16;
+        if (x < y) flag = 35;
+        if (x > y) flag = 44;
+        
+    }
+    if (!flag) flag = 26;
 
+    return flag;
+}
+
+int logic(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    int flag = 0;
     if (check_sign(value_1)) flag |= 4;
     if (check_sign(value_2)) flag |= 1;
     if (check_sign(*result)) flag |= 2;
+    if ((unsigned_comparison(value_1, value_2) >> 2 & 1)) flag |= 8;
 
     return flag;
 }
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     int flag = 0;
-    flag = unsigned_comparison(value_1, value_2, result);
+    flag = logic(value_1, value_2, result);
     // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 0)
     if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 0) {
     //if (flag == 0 || flag == 8 || flag == 3 || flag == 5 || flag == 6 || flag == 11 || flag == 13 || flag == 14) {
@@ -396,7 +475,7 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
      int flag = 0;
      result -> bits[3] ^= (1 << 31);
-     flag = unsigned_comparison(value_1, value_2, result);
+     flag = logic(value_1, value_2, result);
     // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 1)
     if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 1) {
     //if (flag == 1|| flag == 2 || flag == 4 || flag == 7 || flag == 9|| flag == 10 || flag == 12 || flag == 15) {
@@ -417,6 +496,10 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
             //result -> bits[i / 32] |= (prev_ch && prev_ch != -2) ? (1 << (i % 32)) : (0 << (i % 32));
         }
         result -> bits[3] = (0 << 31);
+        //if (check_sign(value_2) &&  ||
+        //    check_sign(*result) ||
+        //   (check_sign(value_1) && flag) ||
+        //    )
         if (flag < 3 || flag > 11) result -> bits[3] = (1 << 31); 
         //if (flag == 1 || flag == 2 || flag == 12 || flag == 15) result -> bits[3] = (1 << 31); 
      } else {
@@ -446,7 +529,9 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     }
     ch_num[8] = '\0';
     int num = atoi(ch_num);
+    
     int degree = atoi(ch_degree) - 6;
+   
     set_sign(&num, dst);
     while(!(num % 10)) {
         num /= 10;
@@ -454,7 +539,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     }
 
     dst -> bits[0] = num;
-    dst -> bits[3] |= abs(degree) << 16; 
+    dst -> bits[3] |= (abs(degree) & 255) << 16; 
     return 0;
 }
 
@@ -476,9 +561,11 @@ char* inside(s21_decimal dst) {
 }
 
 void inside2(s21_decimal dst) {
+    printf(" Число:  %d\n", dst.bits[0]);
     for(int i = 0; i <= 128; i++) {
         if (i > 31 && i % 32 == 0) printf("   bits[%d]\n", i / 32 - 1);
         if (i % 8 == 0) printf(" ");
         if (i < 128)printf("%d", dst.bits[i / 32] >> (31 - i % 32) & 1);
     }
+    puts("\n");
 }

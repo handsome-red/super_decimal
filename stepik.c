@@ -72,6 +72,7 @@ void inside2(s21_decimal dst);
 void mull_by_10(s21_decimal *dst);
 int occupied_bits(s21_decimal dst);
 void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
+void divisible(s21_decimal *dst1, s21_decimal dst2, int bit1, int bit2);
 
 
 int main ( ) {
@@ -280,42 +281,57 @@ int occupied_bits(s21_decimal dst) {
     return bit;
 }
 
+void divisible(s21_decimal *dst1, s21_decimal dst2, int bit1, int bit2) {
+    for (int i = bit1, j = bit2; i >= 0 && j >= 0; i--, j--) {
+        if ((dst2.bits[i / 32] >> i % 32) & 1) {
+            dst1 -> bits[j / 32] |= 1 << j % 32;
+        }
+    }
+}
+
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_decimal temp1 = value_1;
     s21_decimal temp2 = value_2;
-    temp1.bits[3] |= 0 << 31;
-    temp2.bits[3] |= 0 << 31;
-
-    //temp1.bits[1] |= 15 << 4;
-
+    if (check_sign(temp1)) temp1.bits[3] ^= 0 << 31;
+    if (check_sign(temp2)) temp2.bits[3] ^= 1 << 31;
+    
     while (unsigned_comparison(temp1, temp2) == 35) {
         mull_by_10(&temp1);
     }
 
-    printf("%d\n", occupied_bits(temp1));
-    printf("%d\n", occupied_bits(value_2));
     int bit1 = occupied_bits(temp1);
-    int bit2 = occupied_bits(value_2);
+    int bit2 = occupied_bits(temp2);
+    printf("%d\n", occupied_bits(temp1));
+    printf("%d\n", occupied_bits(temp2));
+    
 
-    s21_decimal temp1_1 = {0};
-    for (int i = bit1; i >= 0 && bit2 >= 0; i--) {
-        if ((temp1.bits[i / 32] >> i % 32) & 1) {
-            temp1_1.bits[bit2 / 32] |= 1 << bit2 % 32;
-        }
-         bit2--;
+    s21_decimal div1 = {0};
+
+    while (unsigned_comparison(div1, temp2) == 35) {
+        bit2++;
+        zero(&div1);
+        divisible(&div1, temp1, bit1, bit2);
     }
+    s21_sub(div1, temp2, result);
+    result -> bits[0] = result -> bits[0] << 1;
+    result -> bits[0] |= 1 << 0;
 
-    //temp1_1.bits[(bit1 - bit2) / 32] = temp1.bits[(bit1 - bit2) / 32] >> (bit1 - bit2) % 32;
+    
+    
+    
+
+
+
+    //div1.bits[(bit1 - bit2) / 32] = temp1.bits[(bit1 - bit2) / 32] >> (bit1 - bit2) % 32;
 
     inside2(temp1);
-    inside2(value_2);
-    inside2(temp1_1);
+    inside2(temp2);
+    inside2(div1);
     
 
     // for (int i = 95; i >= 0; i++) {
         
     // }
-    *result = temp1;
     
     return 0; 
 }

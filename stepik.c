@@ -69,10 +69,10 @@ int comparison(s21_decimal value_1, s21_decimal value_2);
 int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);
-void mull_by_10(s21_decimal *dst);
+void mull_by_10(s21_decimal *dst, s21_decimal dst2);
 int occupied_bits(s21_decimal dst);
 void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
-void divisible(s21_decimal *dst1, s21_decimal dst2, int bit1, int bit2);
+void divisible(s21_decimal *dst1, s21_decimal dst2, s21_decimal temp2, int *bit1);
 
 
 int main ( ) {
@@ -266,11 +266,13 @@ int main ( ) {
     return 0;
 }
 
-void mull_by_10(s21_decimal *dst) {
-    s21_decimal ten = {0};
-    s21_from_int_to_decimal(10, &ten);
-    s21_mul(*dst, ten, dst);
-    dst -> bits[3] = (degree(*dst) + 1) << 16;
+void mull_by_10(s21_decimal *dst, s21_decimal dst2) {
+    while (unsigned_comparison(*dst, dst2) == 35) {
+        s21_decimal ten = {0};
+        s21_from_int_to_decimal(10, &ten);
+        s21_mul(*dst, ten, dst);
+        dst -> bits[3] = (degree(*dst) + 1) << 16;
+    }
 }
 
 int occupied_bits(s21_decimal dst) {
@@ -281,57 +283,63 @@ int occupied_bits(s21_decimal dst) {
     return bit;
 }
 
-void divisible(s21_decimal *dst1, s21_decimal dst2, int bit1, int bit2) {
-    for (int i = bit1, j = bit2; i >= 0 && j >= 0; i--, j--) {
+void divisible(s21_decimal *dst1, s21_decimal dst2, s21_decimal temp2, int *bit1) {
+    s21_decimal two = {{2, 0, 0, 0}};
+    int flag = 0;
+    for (int i = *bit1; i >= 0 && !flag; i--) {
         if ((dst2.bits[i / 32] >> i % 32) & 1) {
-            dst1 -> bits[j / 32] |= 1 << j % 32;
-        }
+            s21_mul(*dst1, two, dst1);                                       // смещение результата << на 1
+            dst1 -> bits[0] |= 1 << 0;        
+            //dst1 -> bits[j / 32] |= 1 << j % 32;
+        } else s21_mul(*dst1, two, dst1);
+        if (unsigned_comparison(*dst1, temp2) & 20) flag = 1; //  >
+        //*bit1 = *bit1 - 1;
+        //printf("%d", i);
+        inside2(*dst1); 
     }
+    
+    puts("\n\n");
 }
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_decimal temp1 = value_1;
     s21_decimal temp2 = value_2;
+    s21_decimal two = {{2, 0, 0, 0}};
+    //s21_decimal temp_res = {0};
     if (check_sign(temp1)) temp1.bits[3] ^= 0 << 31;
     if (check_sign(temp2)) temp2.bits[3] ^= 1 << 31;
     
-    while (unsigned_comparison(temp1, temp2) == 35) {
-        mull_by_10(&temp1);
-    }
+    mull_by_10(&temp1, temp2);
 
     int bit1 = occupied_bits(temp1);
-    int bit2 = occupied_bits(temp2);
+    //int bit2 = occupied_bits(temp2);
     printf("%d\n", occupied_bits(temp1));
     printf("%d\n", occupied_bits(temp2));
     
 
     s21_decimal div1 = {0};
-
-    while (unsigned_comparison(div1, temp2) == 35) {
-        bit2++;
-        zero(&div1);
-        divisible(&div1, temp1, bit1, bit2);
+    while (bit1 >= 0) {                                                            //
+        //while ((unsigned_comparison(div1, temp2) >> 0) & 1 ) {                          //                
+                                                                            //
+            //zero(&div1);                                                           //
+            divisible(&div1, temp1, temp2, &bit1);                                 // запись в div1 делимое
+            
+        //}   
+        bit1 -= occupied_bits(div1) + 1;
+        s21_mul(*result, two, result);                                       // смещение результата << на 1
+        result -> bits[0] |= 1 << 0;                                         //  запись результата деления(по другому если div1 > temp2)                                                                       //
+        s21_sub(div1, temp2, &div1);      // делимое - делитель = делимое
+        printf("%d", bit1); 
+        //inside2(div1);   
+                                              
+        //if (bit1 >= 0) div1.bits[0] = div1.bits[0] << 1;                           // если bit1 >= 0 то смещаем деимое
+        //div1.bits[0] |= (temp1.bits[0] >> 5) & 1; 
+        //bit2 = occupied_bits(temp2);                                 //
     }
-    s21_sub(div1, temp2, result);
-    result -> bits[0] = result -> bits[0] << 1;
-    result -> bits[0] |= 1 << 0;
-
     
-    
-    
-
-
-
-    //div1.bits[(bit1 - bit2) / 32] = temp1.bits[(bit1 - bit2) / 32] >> (bit1 - bit2) % 32;
-
     inside2(temp1);
     inside2(temp2);
     inside2(div1);
-    
-
-    // for (int i = 95; i >= 0; i++) {
-        
-    // }
     
     return 0; 
 }
@@ -469,7 +477,7 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 0)
     if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 0) {
     //if (flag == 0 || flag == 8 || flag == 3 || flag == 5 || flag == 6 || flag == 11 || flag == 13 || flag == 14) {
-        
+        zero(result);
         int prev_ch = 0, cur_ch = 0;  //previous_char //current_char
         for (int i = 0; i < 96; i++) {
             int x = ((value_1.bits[i / 32] >> (i % 32)) & 1);
@@ -492,9 +500,11 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
      int flag = 0;
      result -> bits[3] ^= (1 << 31);
      flag = logic(value_1, value_2, result);
+     
     // ((check_sign(value_1) ^ check_sign(value_2) ^ check_sign(*result)) == 1)
     if (((flag >> 0 & 1) ^ (flag >> 1 & 1) ^ (flag >> 2 & 1)) == 1) {
     //if (flag == 1|| flag == 2 || flag == 4 || flag == 7 || flag == 9|| flag == 10 || flag == 12 || flag == 15) {
+        zero(result);
         int prev_ch = 0;  //prev_char
         for (int i = 0, x = 0, y = 0; i < 96; i++) {
             if (flag >> 3 & 1) {
@@ -504,8 +514,6 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
                 x = ((value_2.bits[i / 32] >> (i % 32)) & 1);
                 y = ((value_1.bits[i / 32] >> (i % 32)) & 1);
             }
-            //int x = ((flag >> 3) & 1) ? ((value_1.bits[i / 32] >> (i % 32)) & 1) : ((value_2.bits[i / 32] >> (i % 32)) & 1);
-            //int y = ((flag >> 3) & 1) ? ((value_2.bits[i / 32] >> (i % 32)) & 1) : ((value_1.bits[i / 32] >> (i % 32)) & 1);
             if (prev_ch < 0) x -= 1;
             prev_ch = x - y;
             if (prev_ch && prev_ch != -2) result -> bits[i / 32] |= (1 << (i % 32));
@@ -516,7 +524,7 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         //    check_sign(*result) ||
         //   (check_sign(value_1) && flag) ||
         //    )
-        if (flag < 3 || flag > 11) result -> bits[3] = (1 << 31); 
+        if (flag < 3 || flag > 11) result -> bits[3] |= (1 << 31); 
         //if (flag == 1 || flag == 2 || flag == 12 || flag == 15) result -> bits[3] = (1 << 31); 
      } else {
         s21_add(value_1, value_2, result);

@@ -69,10 +69,10 @@ int comparison(s21_decimal value_1, s21_decimal value_2);
 int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);
-void mull_by_10(s21_decimal *dst, s21_decimal dst2);
-int occupied_bits(s21_decimal dst);
+void mul_by_10(s21_decimal *dst);
+int used_bits(s21_decimal dst);
 void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
-void divisible(s21_decimal *dst1, s21_decimal dst2, s21_decimal temp2, int *bit1, s21_decimal *result);
+void divis(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result);
 
 
 int main ( ) {
@@ -88,7 +88,7 @@ int main ( ) {
     int x2 = 10;
     //float y = 0.00000000000000000000000000000001;
     //float y = 10.00;
-    float y = -0.003;
+    float y = -10;
 
     s21_from_int_to_decimal(x, &value_1);
     s21_from_int_to_decimal(x2, &value_2);
@@ -240,13 +240,13 @@ int main ( ) {
     // printf("%d\n", z); 
     s21_decimal result_mul = {0};
     for(int i = 1; i < 11; i++) {
-        for(int j = 1; j < 11; j++) {
+        for(int j = -1; j > -11; j--) {
             zero(&value_1);
             zero(&value_2);
             s21_from_int_to_decimal(i, &value_1);
             s21_from_int_to_decimal(j, &value_2);
             s21_mul(value_1, value_2, &result_mul);
-            printf(" %d ", result_mul.bits[0]);
+            printf(" %c%d ", (check_sign(result_minus)) ? '-' : '+', result_mul.bits[0]);
         }
         puts("\n");
     }
@@ -257,8 +257,8 @@ int main ( ) {
     zero(&value_2);
     zero(&result_div);
 
-            s21_from_float_to_decimal(304, &value_1);   
-            s21_from_int_to_decimal(3, &value_2);
+            s21_from_float_to_decimal(-0.001, &value_1);   
+            s21_from_int_to_decimal(-8, &value_2);
             s21_div(value_1, value_2, &result_div);
     
     inside2(result_div);
@@ -266,68 +266,82 @@ int main ( ) {
     return 0;
 }
 
-void mull_by_10(s21_decimal *dst, s21_decimal dst2) {
-    while (unsigned_comparison(*dst, dst2) == 35) {
-        s21_decimal ten = {0};
-        s21_from_int_to_decimal(10, &ten);
+void mul_by_10(s21_decimal *dst) {  
+        s21_decimal ten = {{10, 0, 0, 0}};
         s21_mul(*dst, ten, dst);
         dst -> bits[3] = (degree(*dst) + 1) << 16;
-    }
 }
 
-int occupied_bits(s21_decimal dst) {
-    int bit = 0;
+int used_bits(s21_decimal dst) {                            // Используемые биты - это количество битов в мантисе отвечающих за число
+    int bit = 0;                                            // Прохожу с конца мантисы до первой 1(еденицы) и запоминаю позицию i.
     for (int i = 95; i >= 0 && !bit; i--) {
         if (dst.bits[i / 32] >> i & 1) bit = i;
     }
     return bit;
 }
 
-void divisible(s21_decimal *dst1, s21_decimal dst2, s21_decimal temp2, int *bit1, s21_decimal *result) {
-    s21_decimal two = {{2, 0, 0, 0}};                       // Инициализирую переменную равную 2(двум) для смещения на одну позицию влево(<<)
-    int flag = 0;                                           // 2(двойка) потому что умножение на 2(два) дает смещение на одно деление влево.
-    for (int i = *bit1; i >= 0 && !flag; i--) {             // Цикл будет идти пока позиция bit1 >= 0 или не выполнится условие ниже(flag = 1)
+                                                              // Определение: a - b = c          x : y = z
+                                                              //              a - уменьшаемое    x - делимое
+                                                              //              b - вычитаемое     y - делитель
+                                                              //              c - частное        z - частное
+                                                              // << В нашем случае ВЫЧИТАЕМОЕ и ДЕЛИТЕЛЬ - это одно и то же!!! >>
+void divis(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result) {
+    s21_decimal two = {{2, 0, 0, 0}};                         // Инициализирую переменную равную 2(двум) для смещения на одну позицию влево(<<)
+    int flag = 0;                                             // 2(двойка) потому что умножение на 2(два) дает смещение на одно деление влево.
+    for (int i = *bit_pos; i >= 0 && !flag; i--) {            // Цикл будет идти пока позиция bit_pos >= 0 или не выполнится условие ниже(flag = 1)
 
-        if ((dst2.bits[i / 32] >> i % 32) & 1) {            // 
-            s21_mul(*dst1, two, dst1);                      // смещение результата << на 1
-            dst1 -> bits[0] |= 1 << 0;                      //
-        } else s21_mul(*dst1, two, dst1);                   //
-
+        if ((divisible.bits[i / 32] >> i % 32) & 1) {         // Если в делимом появляется 1(еденица), то
+            s21_mul(*reduced, two, reduced);                  // УМЕНЬШАЕМОЕ смещаем на 1 бит влево, и | (Пример: было: 00000111  -->  стало: 00001110)
+            reduced -> bits[0] |= 1 << 0;                     // записываем 1(еденицу).                | (Пример: было: 00001110  -->  стало: 00001111)
+        } else s21_mul(*reduced, two, reduced);               // Cмещает УМЕНЬШАЕМОЕ влево на 1 деление, но уже не добавляем 1(единицу), т.к.
+                                                              // делимое == 0(нулю).
         
-        if (unsigned_comparison(*dst1, temp2) & 20) {       // Если (делимое >= делитель) <-- Условие для остановки цикла!!!
-            flag = 1;                                       // flag = 1 отвечает за остановку цикла
-            s21_mul(*result, two, result);                  // смещает частное влево на 1 деление    (Пример: было: 00000111  -->  стало: 00001110)
-            result -> bits[0] |= 1 << 0;                    // добавляет в 0(нулевой) бит 1(еденицу) (Пример: было: 00001110  -->  стало: 00001111)
-        } else s21_mul(*result, two, result);               // смещает частное влево на 1 деление, но уже не добавляем единицу, т.к.(делимое < делитель)
+        if (unsigned_comparison(*reduced, deductible) & 20) { // Если (УМЕНЬШАЕМОЕ >= ВЫЧИТАЕМОГО) <-- Условие для остановки цикла!!!
+            flag = 1;                                         // flag = 1 отвечает за остановку цикла
+            s21_mul(*result, two, result);                    // смещает частное влево на 1 деление    (Пример: было: 00000111  -->  стало: 00001110)
+            result -> bits[0] |= 1 << 0;                      // добавляет в 0(нулевой) бит 1(еденицу) (Пример: было: 00001110  -->  стало: 00001111)
+        } else s21_mul(*result, two, result);                 // Cмещает частное влево на 1 деление, но уже не добавляем единицу, т.к.(УМЕНЬШАЕМОЕ < ВЫЧИТАЕМОГО)
 
-        *bit1 = *bit1 - 1;          // bit1 нужен чтобы понимать где мы находимся Пример: Позиция(4) 8 7 6 5(4)3 2 1 0
-    }                               //                                                               1 0 0 1 0 1 1 1 1 |_1 1_
-                                    //                                                               __1 1             | 1 1
-    //puts("\n\n\n");               //                                                                   1 1
-}                                   //                                                                 __1 1
-                                    //                                                                     0
+        *bit_pos = *bit_pos - 1;    // bit_pos нужен чтобы понимать где мы находимся Пример: Позиция(4) 8 7 6 5(4)3 2 1 0
+    }                               //                                                                  1 0 0 1 0 1 1 1 1 |_1_1_
+                                    //                                                                  __1_1             | 1 1
+    //puts("\n\n\n");               //                                                                      1 1
+}                                   //                                                                    __1_1
+                                    //                                                                        0
+
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-    s21_decimal temp1 = value_1;
-    s21_decimal temp2 = value_2;
-    if (check_sign(temp1)) temp1.bits[3] ^= 0 << 31;
-    if (check_sign(temp2)) temp2.bits[3] ^= 1 << 31;
+    s21_decimal divisible = value_1;             // ДЕЛИМОЕ
+    s21_decimal reduced = {0};                   // УМЕНЬШАЕМОЕ
+    s21_decimal deductible = value_2;            // ВЫЧИТАЕМОЕ(делитель)
     
-    mull_by_10(&temp1, temp2);
-
-    int bit1 = occupied_bits(temp1);
-    //int bit2 = occupied_bits(temp2);
-    printf("%d\n", occupied_bits(temp1));
-    printf("%d\n", occupied_bits(temp2));
+    //if (check_sign(divisible)) divisible.bits[3] |= 1 << 31;   //
+    //if (check_sign(deductible)) deductible.bits[3] |= 1 << 31; //
+    
     
 
-    s21_decimal div1 = {0};
-    while (bit1 >= 0) {
-        divisible(&div1, temp1, temp2, &bit1, result);      // запись в div1 делимое                                                                   //
-        s21_sub(div1, temp2, &div1);                        // делимое - делитель = делимое
+    int bit_pos = used_bits(divisible);
+    printf("%d\n", used_bits(divisible));
+    
+
+    
+    while (bit_pos >= 0) {
+        if (unsigned_comparison(divisible, deductible) == 44)  {
+            divis(&reduced, divisible, deductible, &bit_pos, result); 
+            s21_sub(reduced, deductible, &reduced);   
+        } else mul_by_10(&divisible);
+           
+        if (bit_pos <= 0 && used_bits(reduced) != 0 && unsigned_comparison(reduced, deductible) >> 0 & 1) {
+            mul_by_10(&divisible);
+            bit_pos = used_bits(divisible);
+            printf("%d", bit_pos);
+            zero(result);
+            zero(&reduced);
+        }
     }
+
     
-    inside2(temp1);
-    inside2(temp2);
+    inside2(divisible);
+    inside2(deductible);
     
     return 0; 
 }
@@ -357,7 +371,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         }
     }
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] = (1 << 31);
-    result -> bits[3] = degree(value_1) << 16; 
+    result -> bits[3] |= (degree(value_1) + degree(value_2)) << 16; 
     return 0;
 }
 
@@ -553,13 +567,15 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     int degree = atoi(ch_degree) - 6;
    
     set_sign(&num, dst);
-    while(!(num % 10)) {
+
+    while(num % 10 == 0 && degree != 0) {
         num /= 10;
         degree += 1;
     }
-
+    printf("%d", degree);
     dst -> bits[0] = num;
     dst -> bits[3] |= (abs(degree) & 255) << 16; 
+    inside2(*dst);
     return 0;
 }
 

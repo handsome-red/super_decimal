@@ -16,9 +16,9 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); //  
 
 
 //Операторы сравнения
-int s21_is_less(s21_decimal, s21_decimal);                  //  <
-int s21_is_less_or_equal(s21_decimal, s21_decimal);         //  <=
-int s21_is_greater(s21_decimal, s21_decimal);               //  />
+int s21_is_less(s21_decimal, s21_decimal);                                  //  <
+int s21_is_less_or_equal(s21_decimal, s21_decimal);                         //  <=
+int s21_is_greater(s21_decimal, s21_decimal);                               //  />
 int s21_is_greater_or_equal(s21_decimal, s21_decimal);                      //  />=
 int s21_is_equal(s21_decimal, s21_decimal);                                 //  ==
 int s21_is_not_equal(s21_decimal, s21_decimal);                             //  !=
@@ -66,13 +66,20 @@ int degree(s21_decimal dst);
 int last_number(s21_decimal dst);
 //  Функция определения последней цифры для округления
 int comparison(s21_decimal value_1, s21_decimal value_2);
+
 int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
+
 void zero(s21_decimal *dst);
+
 void inside2(s21_decimal dst);
+
 void mul_by_10(s21_decimal *dst);
+
 int used_bits(s21_decimal dst);
+
 void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
-void divis(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result);
+
+void SAR(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result);
 
 
 int main ( ) {
@@ -254,8 +261,8 @@ int main ( ) {
     zero(&value_2);
     zero(&result_div);
 
-            s21_from_float_to_decimal(0.001, &value_1);   
-            s21_from_float_to_decimal(-8, &value_2);
+            s21_from_float_to_decimal(100, &value_1);   
+            s21_from_float_to_decimal(-3, &value_2);
             s21_div(value_1, value_2, &result_div);
     
     inside2(result_div);
@@ -273,7 +280,7 @@ void mul_by_10(s21_decimal *dst) {
 }
 
 int used_bits(s21_decimal dst) {                            // Используемые биты - это количество битов в мантисе отвечающих за число
-    int bit = 0;                                            // Прохожу с конца мантисы до первой 1(еденицы) и запоминаю позицию i.
+    int bit = 0;                                            // Прохожу с конца мантисы до первой 1(еденицы) и запоминаю позицию i + 1.
     for (int i = 95; i >= 0 && !bit; i--) {
         if (dst.bits[i / 32] >> i & 1) bit = i + 1;
     }
@@ -285,14 +292,14 @@ int used_bits(s21_decimal dst) {                            // Использу�
                                                               //              b - вычитаемое     y - делитель
                                                               //              c - частное        z - частное
                                                               // << В нашем случае ВЫЧИТАЕМОЕ и ДЕЛИТЕЛЬ - это одно и то же!!! >>
-void divis(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result) {
+void SAR(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result) { // SAR - subtraction and remainder(вычитание и остаток)
     s21_decimal two = {{2, 0, 0, 0}};                         // Инициализирую переменную равную 2(двум) для смещения на одну позицию влево(<<)
     int flag = 0;                                             // 2(двойка) потому что умножение на 2(два) дает смещение на одно деление влево.
     for (int i = *bit_pos; i >= 0 && !flag; i--) {            // Цикл будет идти пока позиция bit_pos >= 0 или не выполнится условие ниже(flag = 1)
 
         if ((divisible.bits[i / 32] >> i % 32) & 1) {         // Если в делимом появляется 1(еденица), то
-            s21_mul(*reduced, two, reduced);                  // УМЕНЬШАЕМОЕ смещаем на 1 бит влево, и | (Пример: было: 00000111  -->  стало: 00001110)
-            reduced -> bits[0] |= 1 << 0;                     // записываем 1(еденицу).                | (Пример: было: 00001110  -->  стало: 00001111)
+            s21_mul(*reduced, two, reduced);                  // УМЕНЬШАЕМОЕ смещаем на 1 бит влево, и | Пример: было: 00000111  -->  стало: 00001110
+            reduced -> bits[0] |= 1 << 0;                     // записываем 1(еденицу).                | Пример: было: 00001110  -->  стало: 00001111
         } else s21_mul(*reduced, two, reduced);               // Cмещает УМЕНЬШАЕМОЕ влево на 1 деление, но уже не добавляем 1(единицу), т.к.
                                                               // делимое == 0(нулю).
         
@@ -310,69 +317,69 @@ void divis(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, 
                                     //                                                                        0
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-    s21_decimal divisible = value_1;             // ДЕЛИМОЕ
-    s21_decimal reduced = {0};                   // УМЕНЬШАЕМОЕ
-    s21_decimal deductible = value_2;            // ВЫЧИТАЕМОЕ(делитель)
+    s21_decimal divisible = value_1;                           // ДЕЛИМОЕ
+    s21_decimal reduced = {0};                                 // УМЕНЬШАЕМОЕ
+    s21_decimal deductible = value_2;                          // ВЫЧИТАЕМОЕ(делитель)
     
-    if (check_sign(divisible)) divisible.bits[3] ^= 1 << 31;   //
-    if (check_sign(deductible)) deductible.bits[3] ^= 1 << 31; //
+    if (check_sign(divisible)) divisible.bits[3] ^= 1 << 31;   // Избавляемся от знака, для того чтобы не было путаницы при вычитании, 
+    if (check_sign(deductible)) deductible.bits[3] ^= 1 << 31; // т.к. на вычитании все держится. Пример: Путаница: x - (-y) = x + y; Нужно: x - y.
     
-    int bit_pos = used_bits(divisible);
+    int bit_pos = used_bits(divisible);                        // Смотрим количество заполненых бит
     
-    while (bit_pos >= 0) {
-        if (degree(divisible) < degree(deductible)) {
-            mul_by_10(&divisible);
-            bit_pos = used_bits(divisible);
-            zero(result);
-            zero(&reduced);
+    while (bit_pos >= 0) {                                     // Цикл пока позиция не дойдет до нуля
+        if (degree(divisible) < degree(deductible)) {          // Если степень ДЕЛИМОГО < степени ВЫЧИТАЕМОГОб, то уравниваем степени Пример: 10 / 0,008    =   10000 * 10^-3 / 8 * 10^-3
+            mul_by_10(&divisible);                             // Уравниваем путем умножения на 10 и прибавления степени
+            bit_pos = used_bits(divisible);                    // Смотрим измененное количество заполненых бит
+            zero(result);                                      // Обнуляем ЧАСТНОЕ
+            zero(&reduced);                                    // Обнуляем УМЕНЬШАЕМОЕ
         }
-        if (unsigned_comparison(divisible, deductible) == 44)  {
-            divis(&reduced, divisible, deductible, &bit_pos, result); 
-            s21_sub(reduced, deductible, &reduced);   
-        } else mul_by_10(&divisible);
-
-        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && degree(divisible) < 8) {
-            mul_by_10(&divisible);
-            bit_pos = used_bits(divisible);
-            zero(result);
-            zero(&reduced);
+        if (unsigned_comparison(divisible, deductible) == 44)  {     // Условие Если ДЕЛИМОЕ >= ВЫЧИТАЕМОГО
+            SAR(&reduced, divisible, deductible, &bit_pos, result);  // SAR
+            s21_sub(reduced, deductible, &reduced);                  // УМЕНЬШАЕМОЕ - ВЫЧИТАЕМОЕ = УМЕНЬШАЕМОЕ
+        } else mul_by_10(&divisible);                                // В остальных случаях умножаем на 10. <-- Это для того чтобы мы могли поделить меньшее число на большое,
+                                                                     // Пример: 3(три) / 10(десять) Нужно привести к 30 * 10^-1  / 10
+        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && degree(divisible) < 5) { // Сложное условие, которое касается
+            mul_by_10(&divisible);                      // битовая позиция <= 0   &&    используемые биты в УМЕНЬШАЕМОМ != 0   &&   
+            bit_pos = used_bits(divisible);             // УМЕНЬШАЕМОЕ != ВЫЧИТАЕМОЕ    &&    (степень ДЕЛИМОГО < 5) <-- НУЖНО ПОДУМАТЬ КАК БЫТЬ???? Нужно ли это условие???
+            zero(result);                               // Умножаем на 10 ДЕЛИМОЕ, считаем количество используемых бит после умножения на 10
+            zero(&reduced);                             // Обнуление, т.к. цикл начинаем с новыми вводными.
         }
     }
 
-    int deg = -degree(divisible) - (-degree(deductible));
-    result -> bits[3] |= abs(deg) << 16;
+    int deg = -degree(divisible) - (-degree(deductible)); // Степень
+    result -> bits[3] |= abs(deg) << 16;                   
    
-    if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);
+    if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);  // Знак
     inside2(divisible);
     inside2(deductible);
     
     return 0; 
 }
 
-void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n) {
-    for (int i = 0; i < 96; i++) {
-        if ((dst2.bits[i / 32] >> i % 32) & 1) {
-            dst -> bits[(i + n) / 32] |= 1 << (i + n) % 32;
-        }
-    }
-}
-
-int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-    zero(result);
-    s21_decimal temp1 = {0};
-    s21_decimal temp2 = {0};
-
-    for (int i = 0; i < 96; i++) {
-        if ((value_2.bits[i / 32] >> i % 32) & 1) {
-            zero(&temp1);
-            zero(&temp2);
-            incomplete_work(&temp1, value_1, i); 
-            temp2 = *result;
-
-            zero(result);
-            s21_add(temp1, temp2, result);
-        }
-    }
+void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n) {   // 
+    for (int i = 0; i + n < 96; i++) {                              //  Цикл
+        if ((dst2.bits[i / 32] >> i % 32) & 1) {                    // Если в первом множитель встречается 1(еденица), то  Пример:   (1 1 0 0 1 0 0)
+            dst -> bits[(i + n) / 32] |= 1 << (i + n) % 32;         // записываем во временную переменную в бит (i + n)               ______1_0_1_0
+        }                                                           //                                                             (1 1 0 0 1 0 0)0     <-- Запись во временную temp1
+    }                                                               //                                                         (1 1 0 0 1 0 0)0 0 0     <-- Запись во временную temp1
+}                                                                   //                                                                  ^
+                                                                    //                                                               (i + n)
+int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) { // Умножение
+    zero(result);                                                           // 
+    s21_decimal temp1 = {0};                                                // Временная переменная
+    s21_decimal temp2 = {0};                                                // Временная переменная
+                                                                            //
+    for (int i = 0; i < 96; i++) {                                          // Цикл, который ищет 1(еденицу) в во втром множителе
+        if ((value_2.bits[i / 32] >> i % 32) & 1) {                         // Если он ее находит, то обнуляются временные переменные
+            zero(&temp1);                                                   //
+            zero(&temp2);                                                   // 
+            incomplete_work(&temp1, value_1, i);                            // В функцию передаем временную переменную temp1, первый множитель value_1, и положение 1(еденицы) i
+            temp2 = *result;                                                //
+                                                                            //
+            zero(result);                                                   //
+            s21_add(temp1, temp2, result);                                  //               (1 1 0 0 1 0 0)0    temp1 Сложение двух строчек и запись в result
+        }                                                                   //           (1 1 0 0 1 0 0)0 0 0    temp2 - это временная переменная для передачи результата сложения предыдущих переменных
+    }                                                                       //
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] = (1 << 31);
     result -> bits[3] |= (degree(value_1) + degree(value_2)) << 16; 
     return 0;

@@ -235,9 +235,6 @@ int main ( ) {
     s21_sub(value_1, value_2, &result_minus);
     printf("%+d - (%+d) = %c%d\n", -5, 10, (check_sign(result_minus)) ? '-' : '+', result_minus.bits[0]);
 
-    // int z = 5;
-    // z = z << 4;
-    // printf("%d\n", z); 
     s21_decimal result_mul = {0};
     for(int i = 1; i < 11; i++) {
         for(int j = -1; j > -11; j--) {
@@ -257,8 +254,8 @@ int main ( ) {
     zero(&value_2);
     zero(&result_div);
 
-            s21_from_float_to_decimal(-0.001, &value_1);   
-            s21_from_int_to_decimal(-8, &value_2);
+            s21_from_float_to_decimal(0.001, &value_1);   
+            s21_from_float_to_decimal(-8, &value_2);
             s21_div(value_1, value_2, &result_div);
     
     inside2(result_div);
@@ -268,14 +265,17 @@ int main ( ) {
 
 void mul_by_10(s21_decimal *dst) {  
         s21_decimal ten = {{10, 0, 0, 0}};
+        int sign = 0;
+        if (check_sign(*dst)) sign = 1;
         s21_mul(*dst, ten, dst);
         dst -> bits[3] = (degree(*dst) + 1) << 16;
+        if (sign) dst -> bits[3] |= 1 << 31;
 }
 
 int used_bits(s21_decimal dst) {                            // Используемые биты - это количество битов в мантисе отвечающих за число
     int bit = 0;                                            // Прохожу с конца мантисы до первой 1(еденицы) и запоминаю позицию i.
     for (int i = 95; i >= 0 && !bit; i--) {
-        if (dst.bits[i / 32] >> i & 1) bit = i;
+        if (dst.bits[i / 32] >> i & 1) bit = i + 1;
     }
     return bit;
 }
@@ -314,32 +314,35 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_decimal reduced = {0};                   // УМЕНЬШАЕМОЕ
     s21_decimal deductible = value_2;            // ВЫЧИТАЕМОЕ(делитель)
     
-    //if (check_sign(divisible)) divisible.bits[3] |= 1 << 31;   //
-    //if (check_sign(deductible)) deductible.bits[3] |= 1 << 31; //
+    if (check_sign(divisible)) divisible.bits[3] ^= 1 << 31;   //
+    if (check_sign(deductible)) deductible.bits[3] ^= 1 << 31; //
     
-    
-
     int bit_pos = used_bits(divisible);
-    printf("%d\n", used_bits(divisible));
-    
-
     
     while (bit_pos >= 0) {
+        if (degree(divisible) < degree(deductible)) {
+            mul_by_10(&divisible);
+            bit_pos = used_bits(divisible);
+            zero(result);
+            zero(&reduced);
+        }
         if (unsigned_comparison(divisible, deductible) == 44)  {
             divis(&reduced, divisible, deductible, &bit_pos, result); 
             s21_sub(reduced, deductible, &reduced);   
         } else mul_by_10(&divisible);
-           
-        if (bit_pos <= 0 && used_bits(reduced) != 0 && unsigned_comparison(reduced, deductible) >> 0 & 1) {
+
+        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && degree(divisible) < 8) {
             mul_by_10(&divisible);
             bit_pos = used_bits(divisible);
-            printf("%d", bit_pos);
             zero(result);
             zero(&reduced);
         }
     }
 
-    
+    int deg = -degree(divisible) - (-degree(deductible));
+    result -> bits[3] |= abs(deg) << 16;
+   
+    if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);
     inside2(divisible);
     inside2(deductible);
     
@@ -572,7 +575,6 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
         num /= 10;
         degree += 1;
     }
-    printf("%d", degree);
     dst -> bits[0] = num;
     dst -> bits[3] |= (abs(degree) & 255) << 16; 
     inside2(*dst);

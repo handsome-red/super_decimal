@@ -69,7 +69,11 @@ int comparison(s21_decimal value_1, s21_decimal value_2);
 
 int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
 
+int logic(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
+
 void zero(s21_decimal *dst);
+
+int set_sign(int *src, s21_decimal *dst);
 
 void inside2(s21_decimal dst);
 

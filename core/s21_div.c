@@ -2,8 +2,14 @@
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_decimal divisible = value_1;
-    s21_decimal reduced = {0};
+    s21_decimal reduced = {{0, 0, 0, 0}};
     s21_decimal deductible = value_2; 
+
+    reduction_of_degrees(&divisible, &deductible);
+    int deg = -degree(divisible) - (-degree(value_2));
+
+    inside2(divisible);
+    inside2(deductible);
     
     divisible.bits[3] = 0;
     deductible.bits[3] = 0;
@@ -13,12 +19,12 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     int bit_pos = used_bits(divisible);
     
     while (bit_pos >= 0) {
-        if (degree(divisible) + degree(value_1) < degree(deductible) + degree(value_2)) {
-            mul_by_10(&divisible);
-            bit_pos = used_bits(divisible);
-            zero(result);
-            zero(&reduced);
-        }
+        // if (degree(divisible) < degree(deductible)) {
+        //     mul_by_10(&divisible);
+        //     bit_pos = used_bits(divisible);
+        //     zero(result);
+        //     zero(&reduced);
+        // }
         if (unsigned_comparison(divisible, deductible) == 44)  {
             SAR(&reduced, divisible, deductible, &bit_pos, result);
             s21_sub(reduced, deductible, &reduced);
@@ -32,7 +38,7 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         }
     }
 
-    int deg = -(degree(divisible) + degree(value_1)) - (-degree(value_2));
+    //int deg = -(degree(divisible)) - (-degree(value_2));
     result -> bits[3] |= abs(deg) << 16;                   
    
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);

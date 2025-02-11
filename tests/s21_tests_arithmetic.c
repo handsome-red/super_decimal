@@ -272,12 +272,27 @@ START_TEST(test_s21_sub_different_scales) {
 
 ////////////////////////////////////////////////////////////////
 
-START_TEST(test_s21_mul_positiv) {
+START_TEST(test_s21_mul_plus_10_plus_5) {
     
     s21_decimal value_1 = {{10, 0, 0, 0}};
     s21_decimal value_2 = {{5, 0, 0, 0}};
-    value_1.bits[3] = 2 << 16;  
-    value_2.bits[3] = 4 << 16;
+    value_1.bits[3] |= 2 << 16;  
+    value_2.bits[3] |= 4 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_mul(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 50);
+    ck_assert_uint_eq(result.bits[3], 6 << 16);
+
+} END_TEST
+
+START_TEST(test_s21_mul_minus_10_minus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{5, 0, 0, 0x80000000}};
+    value_1.bits[3] |= 2 << 16;  
+    value_2.bits[3] |= 4 << 16;
     s21_decimal result = {{0, 0, 0, 0}};
     
     int return_code = s21_mul(value_1, value_2, &result);
@@ -285,33 +300,106 @@ START_TEST(test_s21_mul_positiv) {
     ck_assert_uint_eq(result.bits[0], 50);
     ck_assert_uint_eq(result.bits[3], 6 << 16);
     
-
 } END_TEST
 
-START_TEST(test_s21_div_positiv) {
+START_TEST(test_s21_mul_minus_10_plus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{5, 0, 0, 0}};
+    value_1.bits[3] |= 2 << 16;  
+    value_2.bits[3] |= 4 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_mul(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 50);
+    ck_assert_uint_eq(result.bits[3], 0x80060000);
+    
+} END_TEST
+
+START_TEST(test_s21_mul_plus_10_minus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal value_2 = {{5, 0, 0, 0x80000000}};
+    value_1.bits[3] |= 2 << 16;  
+    value_2.bits[3] |= 4 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_mul(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 50);
+    ck_assert_uint_eq(result.bits[3], 0x80060000);
+    
+} END_TEST
+
+//////////////////////////////////////////////////////////////////
+
+START_TEST(test_s21_div_plus_10_plus_5) {
     
     s21_decimal value_1 = {{10, 0, 0, 0}};
     s21_decimal value_2 = {{8, 0, 0, 0}};
-    value_1.bits[3] = 4 << 16;  
-    value_2.bits[3] = 1 << 16;
+    value_1.bits[3] |= 4 << 16;  
+    value_2.bits[3] |= 1 << 16;
     s21_decimal result = {{0, 0, 0, 0}};
-    inside2(value_1);
-    inside2(value_2);
-    
+
     int return_code = s21_div(value_1, value_2, &result);
-    inside2(result);
     ck_assert_int_eq(return_code, 0);
     ck_assert_uint_eq(result.bits[0], 125);
     ck_assert_uint_eq(result.bits[3], 5 << 16);
     
+} END_TEST
 
+
+START_TEST(test_s21_div_minus_10_minus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{8, 0, 0, 0x80000000}};
+    value_1.bits[3] |= 4 << 16;  
+    value_2.bits[3] |= 1 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_div(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 125);
+    ck_assert_uint_eq(result.bits[3], 5 << 16);
+    
+} END_TEST
+
+START_TEST(test_s21_div_minus_10_plus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{8, 0, 0, 0}};
+    value_1.bits[3] |= 4 << 16;  
+    value_2.bits[3] |= 1 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_div(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 125);
+    ck_assert_uint_eq(result.bits[3], 0x80050000);
+    
+} END_TEST
+
+START_TEST(test_s21_div_plus_10_minus_5) {
+    
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal value_2 = {{8, 0, 0, 0x80000000}};
+    value_1.bits[3] |= 4 << 16;  
+    value_2.bits[3] |= 1 << 16;
+    s21_decimal result = {{0, 0, 0, 0}};
+    
+    int return_code = s21_div(value_1, value_2, &result);
+    ck_assert_int_eq(return_code, 0);
+    ck_assert_uint_eq(result.bits[0], 125);
+    ck_assert_uint_eq(result.bits[3], 0x80050000);
+    
 } END_TEST
 
 ///////////////////////////////////////////////////////////////////
 
 Suite *add_suite(void) {
     Suite *s;
-    TCase *tc_add, *tc_sub;
+    TCase *tc_add;
 
     s = suite_create("Add");
 
@@ -365,7 +453,10 @@ Suite *mul_suite(void) {
     s = suite_create("Mul");
     tc_mul = tcase_create("Mul");
 
-    tcase_add_test(tc_mul, test_s21_mul_positiv);
+    tcase_add_test(tc_mul, test_s21_mul_plus_10_plus_5);
+    tcase_add_test(tc_mul, test_s21_mul_minus_10_minus_5);
+    tcase_add_test(tc_mul, test_s21_mul_minus_10_plus_5);
+    tcase_add_test(tc_mul, test_s21_mul_plus_10_minus_5);
     
     
 
@@ -381,8 +472,10 @@ Suite *div_suite(void) {
     s = suite_create("Div");
     tc_div = tcase_create("Div");
 
-    tcase_add_test(tc_div, test_s21_div_positiv);
-    
+    tcase_add_test(tc_div, test_s21_div_plus_10_plus_5);
+    tcase_add_test(tc_div, test_s21_div_minus_10_minus_5);
+    tcase_add_test(tc_div, test_s21_div_minus_10_plus_5);
+    tcase_add_test(tc_div, test_s21_div_plus_10_minus_5);
     
 
     suite_add_tcase(s, tc_div);

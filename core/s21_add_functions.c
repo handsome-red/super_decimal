@@ -145,7 +145,7 @@ char* inside(s21_decimal dst) {
 }
 
 void inside2(s21_decimal dst) {
-    printf(" Число:  %d\n", dst.bits[0]);
+    printf(" Число:   %c%de-%.2d\n", dst.bits[3] & 1 << 31 ? '-' : ' ', dst.bits[0], degree(dst));
     for(int i = 0; i <= 128; i++) {
         if (i > 31 && i % 32 == 0) printf("   bits[%d]\n", i / 32 - 1);
         if (i % 8 == 0) printf(" ");

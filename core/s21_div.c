@@ -5,13 +5,15 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_decimal reduced = {0};
     s21_decimal deductible = value_2; 
     
-    if (check_sign(divisible)) divisible.bits[3] ^= 1 << 31;
-    if (check_sign(deductible)) deductible.bits[3] ^= 1 << 31;
+    divisible.bits[3] = 0;
+    deductible.bits[3] = 0;
+    // if (check_sign(divisible)) divisible.bits[3] ^= 1 << 31;
+    // if (check_sign(deductible)) deductible.bits[3] ^= 1 << 31;
     
     int bit_pos = used_bits(divisible);
     
     while (bit_pos >= 0) {
-        if (degree(divisible) < degree(deductible)) {
+        if (degree(divisible) + degree(value_1) < degree(deductible) + degree(value_2)) {
             mul_by_10(&divisible);
             bit_pos = used_bits(divisible);
             zero(result);
@@ -30,12 +32,10 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         }
     }
 
-    int deg = -degree(divisible) - (-degree(deductible));
+    int deg = -(degree(divisible) + degree(value_1)) - (-degree(value_2));
     result -> bits[3] |= abs(deg) << 16;                   
    
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);
-    inside2(divisible);
-    inside2(deductible);
     
     return 0; 
 }

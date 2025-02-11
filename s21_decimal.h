@@ -63,5 +63,6 @@ int logic(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int used_bits(s21_decimal dst);
 void incomplete_work(s21_decimal *dst, s21_decimal dst2, int n);
 void SAR(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result);
+void reduction_of_degrees(s21_decimal *temp1, s21_decimal *temp2);
 
 #endif

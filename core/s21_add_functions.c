@@ -153,3 +153,18 @@ void inside2(s21_decimal dst) {
     }
     puts("\n");
 }
+
+void reduction_of_degrees(s21_decimal *temp1, s21_decimal *temp2) {
+    int x = degree(*temp1);
+    int y = degree(*temp2);
+
+    while (x != y) {
+        if (x > y) {
+            mul_by_10(temp2);
+            y++;
+        } else {
+            mul_by_10(temp1);
+            x++;
+        }
+    }
+}

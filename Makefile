@@ -18,7 +18,7 @@ OBJ = $(CORE_OBJ) $(TEST_OBJ)
 
 
 $(EXECUTABLE): $(OBJ)
-	$(CC) $(OBJ) -o $(EXECUTABLE) -lcheck -lm -lsubunit
+	$(CC) $(OBJ) -o $(EXECUTABLE) -lcheck -lm #-lsubunit
 
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c

@@ -2,7 +2,6 @@
 #include "../s21_decimal.h"
 
 
-
 int main() {
     char str[100] = {0};
     s21_decimal dst_y = {0};
@@ -10,8 +9,8 @@ int main() {
     s21_decimal value_1 = {0};//{{0xFFFFFFFF, 0, 0xFFFFFFFF, 0}};
     s21_decimal value_2 = {0};//{{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
 
-    int x = -30;
-    int x2 = 10;
+    int x = 10;
+    int x2 = -10;
     //float y = 0.00000000000000000000000000000001;
     //float y = 10.00;
     float y = -10;
@@ -36,6 +35,23 @@ int main() {
     printf("%d %s %d\n", x, s21_is_equal(value_1, value_2) ? "==" : "  ", x2);
     printf("%d %s %d\n", x, s21_is_not_equal(value_1, value_2) ? "!=" : "  ", x2);
     
+    s21_decimal value_3 = {{15365, 0, 0, 0x00010000}};     // 1 0 1 1 0 0
+    s21_decimal value_4 = {{8, 0, 0, 0x00040000}};    // 
+    s21_decimal res_div = {0};
+
+    printf("\n%d", last_number(value_3, 10));
+    
+    inside2(value_3);
+    inside2(value_4);
+    s21_div(value_3, value_4, &res_div);
+    inside2(res_div);
+
+    mul_by_10(&res_div);
+    inside2(res_div);
+
+    div_by_10(&res_div);
+    inside2(res_div);
+
 
     int number_failed;
     SRunner *sr;
@@ -54,11 +70,11 @@ int main() {
     // srunner_add_suite(sr, is_less_or_equal_suite1());
     // srunner_add_suite(sr, is_not_equal_suite1());
 
-
-
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
 
     return number_failed == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+

@@ -2,11 +2,14 @@
 
 void mul_by_10(s21_decimal *dst) {  
     s21_decimal ten = {{10, 0, 0, 0}};
-    int sign = 0;
-    if (check_sign(*dst)) sign = 1;
     s21_mul(*dst, ten, dst);
-    dst -> bits[3] = (degree(*dst) + 1) << 16;
-    if (sign) dst -> bits[3] |= 1 << 31;
+    dst -> bits[3] = (dst -> bits[3] & ~ (0x2F << 16)) | ((degree(*dst) + 1) << 16);
+}
+
+void div_by_10(s21_decimal *dst) {
+    s21_decimal ten = {{10, 0, 0, 0}};
+    s21_div(*dst, ten, dst);
+    dst -> bits[3] = (dst -> bits[3] & ~ (0x2F << 16)) | ((degree(*dst) - 1) << 16);
 }
 
 int used_bits(s21_decimal dst) {
@@ -20,14 +23,13 @@ return bit;
 void SAR(s21_decimal *reduced, s21_decimal divisible, s21_decimal deductible, int *bit_pos, s21_decimal *result) {
     s21_decimal two = {{2, 0, 0, 0}};
     int flag = 0;
-    for (int i = *bit_pos; i >= 0 && !flag; i--) {
+    for (int i = *bit_pos; i >= 0 && !flag && *bit_pos >= 0; i--) {
 
         if ((divisible.bits[i / 32] >> i % 32) & 1) {
             s21_mul(*reduced, two, reduced);
             reduced -> bits[0] |= 1 << 0;
         } else s21_mul(*reduced, two, reduced);
 
-        
         if (unsigned_comparison(*reduced, deductible) & 20) {
             flag = 1;
             s21_mul(*result, two, result);
@@ -52,11 +54,11 @@ void zero(s21_decimal *dst) {
     }
 }
 
-int last_number(s21_decimal dst) {
+int last_number(s21_decimal dst, int z) {
     int x = 0, tmp = 1;
     for(int i = 0; i < 96; i++) {
-        if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % 100; 
-        tmp = (tmp * 2) % 100;
+        if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % z; 
+        tmp = (tmp * 2) % z;
     }
     return x;
 }
@@ -125,23 +127,6 @@ int logic(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     if ((unsigned_comparison(value_1, value_2) >> 2 & 1)) flag |= 8;
 
     return flag;
-}
-
-char* inside(s21_decimal dst) {
-    
-    char* str = (char*)malloc(140 * sizeof(char));
-    int str_index = 0;
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = 31; j >= 0; j--) {   
-            str[str_index++] = ((dst.bits[i] >> j) & 1) + '0';
-        }
-        str[str_index++] = '\n';
-    }
-    
-    str[str_index] = '\0';
-
-    return str;
 }
 
 void inside2(s21_decimal dst) {

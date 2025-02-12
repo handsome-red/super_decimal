@@ -45,19 +45,18 @@ int s21_negate(s21_decimal value, s21_decimal *result);
 
 
 //  Дополнительные функции:
-char* inside(s21_decimal dst);
-//  Функция перевода битов в понятный вид
 int check_sign(s21_decimal dst);
 //  Функция проверки знака(плюс или минус)
 int degree(s21_decimal dst);
 //  Функция вытаскивания степени из децимала
-int last_number(s21_decimal dst);
+int last_number(s21_decimal dst, int z);
 //  Функция определения последней цифры для округления
 int comparison(s21_decimal value_1, s21_decimal value_2);
 int unsigned_comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);
 void mul_by_10(s21_decimal *dst);
+void div_by_10(s21_decimal *dst);
 int set_sign(int *src, s21_decimal *dst);
 int logic(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int used_bits(s21_decimal dst);

@@ -334,7 +334,7 @@ START_TEST(test_s21_mul_plus_10_minus_5) {
 
 //////////////////////////////////////////////////////////////////
 
-START_TEST(test_s21_div_plus_10_plus_5) {
+START_TEST(test_s21_div_plus_10_plus_8) {
     
     s21_decimal value_1 = {{10, 0, 0, 0}};
     s21_decimal value_2 = {{8, 0, 0, 0}};
@@ -350,7 +350,7 @@ START_TEST(test_s21_div_plus_10_plus_5) {
 } END_TEST
 
 
-START_TEST(test_s21_div_minus_10_minus_5) {
+START_TEST(test_s21_div_minus_10_minus_8) {
     
     s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
     s21_decimal value_2 = {{8, 0, 0, 0x80000000}};
@@ -365,7 +365,7 @@ START_TEST(test_s21_div_minus_10_minus_5) {
     
 } END_TEST
 
-START_TEST(test_s21_div_minus_10_plus_5) {
+START_TEST(test_s21_div_minus_10_plus_8) {
     
     s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
     s21_decimal value_2 = {{8, 0, 0, 0}};
@@ -380,7 +380,7 @@ START_TEST(test_s21_div_minus_10_plus_5) {
     
 } END_TEST
 
-START_TEST(test_s21_div_plus_10_minus_5) {
+START_TEST(test_s21_div_plus_10_minus_8) {
     
     s21_decimal value_1 = {{10, 0, 0, 0}};
     s21_decimal value_2 = {{8, 0, 0, 0x80000000}};
@@ -472,10 +472,10 @@ Suite *div_suite(void) {
     s = suite_create("Div");
     tc_div = tcase_create("Div");
 
-    tcase_add_test(tc_div, test_s21_div_plus_10_plus_5);
-    tcase_add_test(tc_div, test_s21_div_minus_10_minus_5);
-    tcase_add_test(tc_div, test_s21_div_minus_10_plus_5);
-    tcase_add_test(tc_div, test_s21_div_plus_10_minus_5);
+    tcase_add_test(tc_div, test_s21_div_plus_10_plus_8);
+    tcase_add_test(tc_div, test_s21_div_minus_10_minus_8);
+    tcase_add_test(tc_div, test_s21_div_minus_10_plus_8);
+    tcase_add_test(tc_div, test_s21_div_plus_10_minus_8);
     
 
     suite_add_tcase(s, tc_div);

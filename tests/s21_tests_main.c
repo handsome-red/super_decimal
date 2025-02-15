@@ -35,8 +35,8 @@ int main() {
     // printf("%d %s %d\n", x, s21_is_equal(value_1, value_2) ? "==" : "  ", x2);
     // printf("%d %s %d\n", x, s21_is_not_equal(value_1, value_2) ? "!=" : "  ", x2);
     
-    s21_decimal value_3 = {{15, 0, 0, 0x80000000}};     // 1 0 1 1 0 0
-    s21_decimal value_4 = {{15, 0, 0, 0x00000000}};    // 
+    s21_decimal value_3 = {{150, 0, 0, 0x80000000}};     // 1 0 1 1 0 0
+    s21_decimal value_4 = {{10, 0, 0, 0x00000000}};    // 
     s21_decimal res_div = {0};
     s21_decimal res_mul = {0};
     //printf("\n%d", last_number(value_3, 1, 1));

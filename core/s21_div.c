@@ -33,6 +33,10 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
             big_zero(&reduced);
         }
     }
+    if (last_number(temp_res, 1) == 0) {
+        div_by_10(&temp_res);
+        deg--;
+    }
     *result = reducing_to_less(temp_res);
     result -> bits[3] |= (deg + big_degree(divisible)) << 16;             
     if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);

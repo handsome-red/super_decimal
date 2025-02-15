@@ -17,4 +17,3 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     result -> bits[3] |= (degree(value_1) + degree(value_2)) << 16; 
     return 0;
 }
-

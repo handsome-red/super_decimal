@@ -88,14 +88,12 @@ void big_zero(s21_big_decimal *dst) {
     }
 }
 
-int last_number(s21_decimal dst, int last, int size) {
+int last_number(s21_big_decimal dst, int last) {
     int x = 0, tmp = 1, remains = 0, cycle = 0;
     if (last == 1) remains = 10;
     if (last == 2) remains = 100;
-    if (size == 1) cycle  = 96;
-    if (size == 2) cycle  = 224;
 
-    for(int i = 0; i < cycle && remains && cycle; i++) {
+    for(int i = 0; i < 224 && remains; i++) {
         if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % remains; 
         tmp = (tmp * 2) % remains;
     }
@@ -267,3 +265,9 @@ int checking_for_zero(s21_decimal dst) {
     int flag = (!dst.bits[0] && !dst.bits[1] && !dst.bits[2]) ? 1 : 0;
     return flag;
 }
+
+// void rounding_up(s21_big_decimal *dst) {
+//     if (used_bits(dst) > 96) {
+//         last_number(temp_res, 1) == 0
+//     }
+// }

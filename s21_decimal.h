@@ -50,7 +50,7 @@ int s21_negate(s21_decimal value, s21_decimal *result);
 
 int check_sign(s21_decimal dst);
 int degree(s21_decimal dst);
-int last_number(s21_decimal dst, int last, int size);
+int last_number(s21_big_decimal dst, int last);
 int comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);

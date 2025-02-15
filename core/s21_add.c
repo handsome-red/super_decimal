@@ -1,4 +1,4 @@
-#include "../s21_decimal.h"
+ #include "../s21_decimal.h"
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_big_decimal temp1 = bringing_to_big(value_1);

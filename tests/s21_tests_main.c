@@ -35,16 +35,22 @@ int main() {
     // printf("%d %s %d\n", x, s21_is_equal(value_1, value_2) ? "==" : "  ", x2);
     // printf("%d %s %d\n", x, s21_is_not_equal(value_1, value_2) ? "!=" : "  ", x2);
     
-    s21_decimal value_3 = {{10, 0, 0, 0x80010000}};     // 1 0 1 1 0 0
-    s21_decimal value_4 = {{8, 0, 0, 0x80040000}};    // 
+    s21_decimal value_3 = {{15, 0, 0, 0x80000000}};     // 1 0 1 1 0 0
+    s21_decimal value_4 = {{15, 0, 0, 0x00000000}};    // 
     s21_decimal res_div = {0};
-
+    s21_decimal res_mul = {0};
     //printf("\n%d", last_number(value_3, 1, 1));
     
     inside2(value_3);
     inside2(value_4);
     s21_div(value_3, value_4, &res_div);
+    s21_mul(value_3, value_4, &res_mul);
     inside2(res_div);
+    inside2(res_mul);
+
+    s21_big_decimal by_10 = {{225, 0, 0, 0, 0, 0, 0, 0x80020000}};
+    div_by_10(&by_10);
+    inside3(by_10);
 
     // mul_by_10(&res_div);
     // inside2(res_div);

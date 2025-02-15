@@ -1,10 +1,21 @@
 #include "../s21_decimal.h"
 
 
-void div_by_10(s21_decimal *dst) {
-    s21_decimal ten = {{10, 0, 0, 0}};
-    s21_div(*dst, ten, dst);
-    dst -> bits[3] = (dst -> bits[3] & ~ (0x2F << 16)) | (degree(*dst) << 16);
+void div_by_10(s21_big_decimal *dst) {
+    s21_big_decimal divisible = *dst;
+    big_zero(dst);
+    s21_big_decimal deductible = {{10, 0, 0, 0, 0, 0, 0, 0}};
+    s21_big_decimal reduced = {0};
+    int deg_sign = dst -> bits[7];
+    
+    int bit_pos = used_bits(divisible);
+    while (bit_pos >= 0) {
+        if (unsigned_comparison(divisible, deductible) & 20)  {
+            SAR(&reduced, divisible, deductible, &bit_pos, dst);
+            sub(reduced, deductible, &reduced);
+        }
+    }
+    dst -> bits[7] = deg_sign;
 }
 
 void offse_by_one(s21_big_decimal *dst) {  
@@ -53,11 +64,11 @@ void SAR(s21_big_decimal *reduced, s21_big_decimal divisible, s21_big_decimal de
             flag = 1;
             result -> bits[0] |= 1 << 0;
         }
-        *bit_pos = *bit_pos - 1;
+        (*bit_pos)--;
     }
 } 
 
-void incomplete_work(s21_big_decimal *dst, s21_decimal dst2, int n) {
+void incomplete_work(s21_big_decimal *dst, s21_big_decimal dst2, int n) {
     for (int i = 0; i + n < 224; i++) {
         if ((dst2.bits[i / 32] >> i % 32) & 1) {
             dst -> bits[(i + n) / 32] |= 1 << (i + n) % 32;
@@ -126,14 +137,17 @@ int set_sign(int *src, s21_decimal *dst) {
 }
 
 int comparison(s21_decimal value_1, s21_decimal value_2) {
+    s21_big_decimal temp1 = bringing_to_big(value_1);
+    s21_big_decimal temp2 = bringing_to_big(value_2);
+    reduction_of_degrees(&temp1, &temp2);
     int flag = 0;
-    for (int i = 95; i >= 0 && !flag; i--) {
+    for (int i = 223; i >= 0 && !flag; i--) {
 
-        int x = (value_1.bits[i / 32] >> (i % 32)) & 1;
-        int y = (value_2.bits[i / 32] >> (i % 32)) & 1;
+        int x = (temp1.bits[i / 32] >> (i % 32)) & 1;
+        int y = (temp2.bits[i / 32] >> (i % 32)) & 1;
 
-        if (check_sign(value_1)) x *= -1;
-        if (check_sign(value_2)) y *= -1; 
+        if (big_check_sign(temp1)) x *= -1;
+        if (big_check_sign(temp2)) y *= -1; 
 
         if (x < y) flag = 35;
         if (x > y) flag = 44;
@@ -234,7 +248,6 @@ void add(s21_big_decimal temp1, s21_big_decimal temp2, s21_big_decimal *result) 
     }  
 }
 
-
 void sub(s21_big_decimal temp1, s21_big_decimal temp2, s21_big_decimal *result) {
     big_zero(result);
     int prev_ch = 0;
@@ -250,4 +263,9 @@ void sub(s21_big_decimal temp1, s21_big_decimal temp2, s21_big_decimal *result) 
         prev_ch = x - y;
         if (prev_ch && prev_ch != -2) result -> bits[i / 32] |= (1 << (i % 32));
     }
+}
+
+int checking_for_zero(s21_decimal dst) {
+    int flag = (!dst.bits[0] && !dst.bits[1] && !dst.bits[2]) ? 1 : 0;
+    return flag;
 }

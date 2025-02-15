@@ -1,6 +1,7 @@
 #include "../s21_decimal.h"
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    if (checking_for_zero(value_2)) return 3;
     zero(result);
     s21_big_decimal divisible = bringing_to_big(value_1);
     s21_big_decimal deductible = bringing_to_big(value_2);
@@ -25,7 +26,7 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
             mul_by_10(&divisible);
             bit_pos = used_bits(divisible);
         }
-        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && big_degree(divisible) < 5) {
+        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && big_degree(divisible) < 28) {
             mul_by_10(&divisible);
             bit_pos = used_bits(divisible);
             big_zero(&temp_res);

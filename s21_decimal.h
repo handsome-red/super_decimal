@@ -55,7 +55,7 @@ int comparison(s21_decimal value_1, s21_decimal value_2);
 void zero(s21_decimal *dst);
 void inside2(s21_decimal dst);
 void inside3(s21_big_decimal dst);
-void div_by_10(s21_decimal *dst);
+void div_by_10(s21_big_decimal *dst);
 int set_sign(int *src, s21_decimal *dst);
 
 s21_big_decimal bringing_to_big(s21_decimal temp);
@@ -69,11 +69,12 @@ void reduction_of_degrees(s21_big_decimal *temp1, s21_big_decimal *temp2);
 void big_zero(s21_big_decimal *dst);
 s21_decimal reducing_to_less(s21_big_decimal big);
 int unsigned_comparison(s21_big_decimal value_1, s21_big_decimal value_2);
-void incomplete_work(s21_big_decimal *dst, s21_decimal dst2, int n);
+void incomplete_work(s21_big_decimal *dst, s21_big_decimal dst2, int n);
 int used_bits(s21_big_decimal dst);
 void SAR(s21_big_decimal *reduced, s21_big_decimal divisible, s21_big_decimal deductible, int *bit_pos, s21_big_decimal *result);
 void offse_by_one(s21_big_decimal *dst);
 void mul_by_10(s21_big_decimal *dst);
+int checking_for_zero(s21_decimal dst);
 
 
 #endif

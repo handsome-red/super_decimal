@@ -3,10 +3,10 @@
 
 void div_by_10(s21_big_decimal *dst) {
     s21_big_decimal divisible = *dst;
-    big_zero(dst);
     s21_big_decimal deductible = {{10, 0, 0, 0, 0, 0, 0, 0}};
     s21_big_decimal reduced = {0};
     int deg_sign = dst -> bits[7];
+    big_zero(dst);
     
     int bit_pos = used_bits(divisible);
     while (bit_pos >= 0) {
@@ -160,13 +160,12 @@ int comparison(s21_decimal value_1, s21_decimal value_2) {
 int unsigned_comparison(s21_big_decimal value_1, s21_big_decimal value_2) {
     int flag = 0;
     for (int i = 223; i >= 0 && flag == 0; i--) {
-
+        
         int x = (value_1.bits[i / 32] >> (i % 32)) & 1;
         int y = (value_2.bits[i / 32] >> (i % 32)) & 1;
 
         if (x < y) flag = 35;
         if (x > y) flag = 44;
-        
     }
     if (!flag) flag = 26;
 
@@ -264,7 +263,6 @@ void sub(s21_big_decimal temp1, s21_big_decimal temp2, s21_big_decimal *result) 
         if (prev_ch && prev_ch != -2) result -> bits[i / 32] |= (1 << (i % 32));
     }
 }
-
 int checking_for_zero(s21_decimal dst) {
     int flag = (!dst.bits[0] && !dst.bits[1] && !dst.bits[2]) ? 1 : 0;
     return flag;

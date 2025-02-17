@@ -75,6 +75,8 @@ void SAR(s21_big_decimal *reduced, s21_big_decimal divisible, s21_big_decimal de
 void offse_by_one(s21_big_decimal *dst);
 void mul_by_10(s21_big_decimal *dst);
 int checking_for_zero(s21_decimal dst);
+void reducing_to_decimal(s21_big_decimal *dst);
+int checking_3_bytes(s21_decimal dst);
 
 
 #endif

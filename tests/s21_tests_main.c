@@ -35,87 +35,55 @@ int main() {
     // printf("%d %s %d\n", x, s21_is_equal(value_1, value_2) ? "==" : "  ", x2);
     // printf("%d %s %d\n", x, s21_is_not_equal(value_1, value_2) ? "!=" : "  ", x2);
     
-    s21_decimal value_3 = {{150, 0, 0, 0x80000000}};     // 1 0 1 1 0 0
-    s21_decimal value_4 = {{10, 0, 0, 0x00000000}};    // 
-    s21_decimal res_div = {0};
-    s21_decimal res_mul = {0};
-    //printf("\n%d", last_number(value_3, 1, 1));
+
+
+
+
+  // 79228162514264337593543950335
+  s21_decimal decimal1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0}};
+  // 0.0000000000000000000000000001
+  s21_decimal decimal2 = {{0x1, 0x0, 0x0, 0x1C0000}};
+  // overflow
+
+  
+    s21_decimal result;
+    int z = s21_div(decimal1, decimal2, &result);
+    inside2(decimal1);
+    inside2(decimal2);
+    inside2(result);
+    //inside2(check);
     
-    inside2(value_3);
-    inside2(value_4);
-    s21_div(value_3, value_4, &res_div);
-    s21_mul(value_3, value_4, &res_mul);
-    inside2(res_div);
-    inside2(res_mul);
-
-    s21_big_decimal by_10 = {{225, 0, 0, 0, 0, 0, 0, 0x80020000}};
-    div_by_10(&by_10);
-    inside3(by_10);
-
-    // mul_by_10(&res_div);
-    // inside2(res_div);
-
-    // div_by_10(&res_div);
-    // inside2(res_div);
-
-    // offse_by_one(&value_3);
-    // inside2(value_3);
-    // s21_decimal two = {{2, 0, 0, 0}};
-    // s21_mul(value_3, two, &value_3);
-    // inside2(value_3);
-
-    // s21_big_decimal war = bringing_to_big(value_4);
-    // inside3(war);
-
-    // s21_decimal value_5 = {{10, 0, 0, 0}};
-    // s21_decimal value_6 = {{8, 0, 0, 0x80000000}};
-    // value_5.bits[3] |= 1 << 16;  
-    // value_6.bits[3] |= 4 << 16;
-    
-    
-    // s21_decimal result6 = {{0, 0, 0, 0}};
-
-    // s21_add(value_5, value_6, &result6);
-    
-    // inside2(value_5);
-    // inside2(value_6);
-    // //div_by_10(&value_6);
-    // //inside2(value_6);
-    // inside2(result6);
-    // s21_mul(value_5, value_6, &result6);
-    // inside2(result6);
-
-
-
-    // s21_decimal value_7 = {{50, 0, 0, 0}};
-    // s21_decimal value_8 = {{1000, 0, 0, 0}};
-    // s21_decimal result8 = {0};
-    // value_7.bits[3] = 2 << 16;  
-    // value_8.bits[3] = 4 << 16;
-    // s21_sub(value_7, value_8, &result8);
-    // inside2(value_7);
-    // inside2(value_8);
-    // inside2(result8);
-    
-
-    // s21_big_decimal war = bringing_to_big(result6); 
-    // war.bits[7] |= 4 << 16;
-    // war.bits[7] |= 1 << 31;
-
-    // inside3(war);
-    // big_mul_by_10(&war);
-    // inside3(war);
-
 
     int number_failed;
     SRunner *sr;
     sr = srunner_create(NULL);
 
 
-    srunner_add_suite(sr, add_suite());
-    srunner_add_suite(sr, sub_suite());
-    srunner_add_suite(sr, mul_suite());
-    srunner_add_suite(sr, div_suite());
+
+    srunner_add_suite(sr, div_suite0());
+    //srunner_add_suite(sr, div_suite1());
+    // srunner_add_suite(sr, div_suite2());
+    // srunner_add_suite(sr, div_suite3());
+    // srunner_add_suite(sr, div_suite4());
+    // srunner_add_suite(sr, div_suite5());
+    // srunner_add_suite(sr, div_suite6());
+    // srunner_add_suite(sr, div_suite7());
+    // srunner_add_suite(sr, div_suite8());
+    // srunner_add_suite(sr, div_suite9());
+    // srunner_add_suite(sr, div_suite10());
+    // srunner_add_suite(sr, div_suite11());
+    // srunner_add_suite(sr, div_suite12());
+    // srunner_add_suite(sr, div_suite13());
+    // srunner_add_suite(sr, div_suite14());
+    // srunner_add_suite(sr, div_suite15());
+    // srunner_add_suite(sr, div_suite16());
+    // srunner_add_suite(sr, div_suite17());
+    // srunner_add_suite(sr, div_suite18());
+
+    // srunner_add_suite(sr, add_suite());
+    // srunner_add_suite(sr, sub_suite());
+    // srunner_add_suite(sr, mul_suite());
+    // srunner_add_suite(sr, div_suite());
     
     // srunner_add_suite(sr, is_equal_suite1());
     // srunner_add_suite(sr, is_greater_suite1());

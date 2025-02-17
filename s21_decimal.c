@@ -52,6 +52,9 @@ int s21_truncate(s21_decimal value, s21_decimal *result_plus);
 int s21_negate(s21_decimal value, s21_decimal *result_plus);
 //  Возвращает результат умножения указанного Decimal на -1.
 
+int find_scale (s21_decimal value);
+// Определение степени.
+
 
 int pow_int(int x, int y);
 char* inside(s21_decimal dst);
@@ -109,6 +112,12 @@ int main ( ) {
 
     puts("Функция определения последней цифры для округления:");
     printf(" Число: %d \n Последняя цифра: %d\n\n", value_1.bits[0], last_number(value_1));
+
+    s21_negate(value_1, &value_1);
+    s21_round(value_1, &value_1);
+
+    find_scale(value_2);
+
     return 0;
 }
 
@@ -136,7 +145,6 @@ int pow_int(int x, int y) {
 /* Функция определения двух последних цифр - Андрей */
 
 int last_number(s21_decimal dst) {
-    dst = {{123, 123, 123, 0}};
     int x = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 32; j++) {
@@ -244,47 +252,6 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     return 0;
 }
 
-// inside - Эдуард
-
-// char* inside(s21_decimal dst) {
-//     char *str = malloc(140);
-//     int bit = 0;
-//     for(int i = 0; i < 4; i++) {
-//         for(int j = 0; j < 32; j++) {
-//             str[bit++] = ((dst.bits[i] >> j) & 1) + '0';
-//         }
-//         str[bit++] = '\n';
-//     }
-//     str[bit] = '\0';
-//     char ch = ' ';
-//     for(int j = 0, i = 31; i > j;) {
-//         ch = str[j];
-//         str[j++] = str[i];
-//         str[i--] = ch;
-//     }
-//     str[32] = '\n';
-//     for(int j = 33, i = 64; i > j;) {
-//         ch = str[j];
-//         str[j++] = str[i];
-//         str[i--] = ch;
-//     }
-//     str[65] = '\n';
-//     for(int j = 66, i = 97; i > j;) {
-//         ch = str[j];
-//         str[j++] = str[i];
-//         str[i--] = ch;
-//     }
-//     str[98] = '\n';
-//     for(int j = 99, i = 130; i > j;) {
-//         ch = str[j];
-//         str[j++] = str[i];
-//         str[i--] = ch;
-//     }
-//     str[131] = '\0';
-
-//     return str;
-// }
-
 // inside - Андрей
 
 char* inside(s21_decimal dst) {
@@ -294,7 +261,11 @@ char* inside(s21_decimal dst) {
 
     for (int i = 0; i < 4; i++) {
         for (int j = 31; j >= 0; j--) {   
-            str[str_index++] = ((dst.bits[i] >> j) & 1) + '0';
+
+            str[str_index] = ((dst.bits[i] >> j) & 1) + '0';
+
+            str_index++;
+
         }
         str[str_index++] = '\n';
     }
@@ -305,5 +276,61 @@ char* inside(s21_decimal dst) {
 }
 
 
+// /* Округляет указанное Decimal число до ближайшего целого числа в сторону отрицательной бесконечности. */
+
+// int s21_floor(s21_decimal value, s21_decimal *result) {
 
 
+
+//     return 0;
+// }
+
+/* Возвращает результат умножения указанного Decimal на -1. */
+
+int s21_negate(s21_decimal value, s21_decimal *result) {
+
+    printf("Возвращает результат умножения указанного Decimal на -1.\n");
+
+    printf("До операции\n%s\n", inside(value));
+
+    // if ((value.bits[3] >> 31) & 1) {
+    //     value.bits[3] << 1;
+    //     value.bits[3] >> 1;
+    // } else {
+    //     value.bits[3] ^= 0x80000000;
+    // }
+
+    value.bits[3] ^= (1 << 31);
+
+    printf("После операции\n%s\n", inside(value));
+
+    *result = value;
+
+    return 0;
+}
+
+/* Округляет Decimal до ближайшего целого числа */
+
+int s21_round(s21_decimal value, s21_decimal *result) {
+
+
+
+    return 0;
+}
+
+/* Функция определения степени */
+
+int find_scale (s21_decimal value) {
+
+    // 10000000000111110000000000000000
+
+    // value.bits[3] = 0x80990000;
+
+    int scale = 0;
+
+    scale = ((value.bits[3] ^ (1 << 31)) >> 16);
+
+    printf("Степень числа: %d\n", scale);
+
+    return scale;
+}

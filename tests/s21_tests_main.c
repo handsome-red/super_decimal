@@ -35,50 +35,42 @@ int main() {
     // printf("%d %s %d\n", x, s21_is_equal(value_1, value_2) ? "==" : "  ", x2);
     // printf("%d %s %d\n", x, s21_is_not_equal(value_1, value_2) ? "!=" : "  ", x2);
     
-
-
-
-
-  // 79228162514264337593543950335
-  s21_decimal decimal1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0}};
-  // 0.0000000000000000000000000001
-  s21_decimal decimal2 = {{0x1, 0x0, 0x0, 0x1C0000}};
-  // overflow
-
+    
+  // -0.0000000000000025
+  s21_decimal decimal1 = {{0x19, 0x0, 0x0, 0x80100000}};
+  // -0.0000000000000005
+  s21_decimal decimal2 = {{0x5, 0x0, 0x0, 0x80100000}};
+  // too small actually, no
+  // 0.0000000000000000000000000000
+  s21_decimal decimal_check = {{0x0, 0x0, 0x0, 0x1C0000}};
   
     s21_decimal result;
-    int z = s21_div(decimal1, decimal2, &result);
+    s21_mul(decimal1, decimal2, &result);
+
+    
+    //printf("%d", s21_is_equal(result, decimal_check));
     inside2(decimal1);
     inside2(decimal2);
     inside2(result);
-    //inside2(check);
-    
+    inside2(decimal_check);
+
+
+
+
+
 
     int number_failed;
     SRunner *sr;
     sr = srunner_create(NULL);
 
 
-
+    srunner_add_suite(sr, add_suite1());
     srunner_add_suite(sr, div_suite0());
-    //srunner_add_suite(sr, div_suite1());
-    // srunner_add_suite(sr, div_suite2());
-    // srunner_add_suite(sr, div_suite3());
-    // srunner_add_suite(sr, div_suite4());
-    // srunner_add_suite(sr, div_suite5());
-    // srunner_add_suite(sr, div_suite6());
-    // srunner_add_suite(sr, div_suite7());
-    // srunner_add_suite(sr, div_suite8());
-    // srunner_add_suite(sr, div_suite9());
-    // srunner_add_suite(sr, div_suite10());
-    // srunner_add_suite(sr, div_suite11());
-    // srunner_add_suite(sr, div_suite12());
-    // srunner_add_suite(sr, div_suite13());
-    // srunner_add_suite(sr, div_suite14());
-    // srunner_add_suite(sr, div_suite15());
-    // srunner_add_suite(sr, div_suite16());
-    // srunner_add_suite(sr, div_suite17());
-    // srunner_add_suite(sr, div_suite18());
+    srunner_add_suite(sr, div_suite1());
+    srunner_add_suite(sr, mul_suite0());
+    srunner_add_suite(sr, mul_suite1());
+    srunner_add_suite(sr, sub_suite1());
+
 
     // srunner_add_suite(sr, add_suite());
     // srunner_add_suite(sr, sub_suite());

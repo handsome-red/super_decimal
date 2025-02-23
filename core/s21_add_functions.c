@@ -7,15 +7,14 @@ void div_by_10(s21_big_decimal *dst) {
     s21_big_decimal reduced = {0};
     int deg_sign = dst -> bits[7];
     big_zero(dst);
-    
     int bit_pos = used_bits(divisible);
     while (bit_pos >= 0) {
         if (unsigned_comparison(divisible, deductible) & 20)  {
             SAR(&reduced, divisible, deductible, &bit_pos, dst);
             sub(reduced, deductible, &reduced);
-        }
+        } else bit_pos--;
     }
-    dst -> bits[7] = deg_sign ;
+    dst -> bits[7] = deg_sign;
 }
 
 void offse_by_one(s21_big_decimal *dst) {  
@@ -91,10 +90,10 @@ void big_zero(s21_big_decimal *dst) {
 int last_number(s21_big_decimal dst, int last) {
     int x = 0, tmp = 1, remains = 0;
     if (last == 1) remains = 10;
-    if (last == 2) remains = 10000;
+    if (last == 2) remains = 100;
 
     for(int i = 0; i < 224 && remains; i++) {
-        if ((dst.bits[i / 32] >> i) & 1) x = (x + tmp) % remains; 
+        if ((dst.bits[i / 32] >> i % 32) & 1) x = (x + tmp) % remains; 
         tmp = (tmp * 2) % remains;
     }
     return x;
@@ -136,10 +135,7 @@ int set_sign(int *src, s21_decimal *dst) {
 
 int comparison(s21_decimal value_1, s21_decimal value_2) {
     s21_big_decimal temp1 = bringing_to_big(value_1);
-    //inside3(temp1);
     s21_big_decimal temp2 = bringing_to_big(value_2);
-    //inside3(temp2);
-    
     reduction_of_degrees(&temp1, &temp2);
     int flag = 0;
     for (int i = 223; i >= 0 && !flag; i--) {
@@ -226,12 +222,14 @@ s21_big_decimal bringing_to_big(s21_decimal less) {
     return big;
 }
 
-s21_decimal reducing_to_less(s21_big_decimal big) {
+s21_decimal reducing_to_less(s21_big_decimal big, int deg, int sign) {
     s21_decimal less = {0};
     less.bits[0] = big.bits[0];
     less.bits[1] = big.bits[1];
     less.bits[2] = big.bits[2];
-    less.bits[3] = big.bits[7];
+    less.bits[3] |= deg << 16;   
+    less.bits[3] |= sign << 31;
+
     return less;
 }
 
@@ -285,9 +283,41 @@ int checking_3_bytes(s21_decimal dst) {
     short z = 0;
     z = dst.bits[3] >> 0;
     if (z != 0) flag = 1;
-    //printf("%d   %d   %d\n", degree(dst), z, c);
     return flag;
 }
 
-//int rounding_up
+void rounding_up(s21_big_decimal *dst, int *deg) {
+    int z = 0;
+    int remains = 0;
+    while(used_bits(*dst) > 96 || *deg > 28) {
+        if (z % 10) remains = 1;
+        z = last_number(*dst, 2);
+        div_by_10(dst);
+        (*deg)--;
+    }
+    s21_big_decimal one = {{1, 0, 0, 0, 0, 0, 0, 0}};
+    if ((z % 20 > 5 && z % 20 < 10) || (z % 20 >= 15 && z % 20 <= 19) || (z % 20 == 5 && remains)) {
+        add(*dst, one, dst);
+    }
+}
+
+void number(s21_big_decimal dst) {
+    s21_big_decimal temp = dst;
+    int i = 0;
+    char str[200] = {0};
+    int z = used_bits(temp);
+    for ( ; i <= 100 && z > 0; i++) {
+        str[i] = last_number(temp, 1) + '0';
+        div_by_10(&temp);
+        z = used_bits(temp);
+    }
+    i--;
+    char ch = 0;
+    for (int j = 0; j <= i; j++, i--) {
+        ch = str[j];
+        str[j] = str[i];
+        str[i] = ch;
+    }
+    printf("%s\n", str);
+}
 

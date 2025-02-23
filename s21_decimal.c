@@ -7,6 +7,10 @@ typedef struct {
     unsigned int bits[4];
 } s21_decimal;
 
+typedef struct {
+    s21_decimal decimals[2];
+} s21_big_decimal;
+
 //Арифметические операторы
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  +
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result_plus); //  -
@@ -116,7 +120,7 @@ int main ( ) {
     s21_negate(value_1, &value_1);
     s21_round(value_1, &value_1);
 
-    find_scale(value_2);
+    printf("Степень чила: %d\n", find_scale(value_2));
 
     return 0;
 }
@@ -149,7 +153,7 @@ int last_number(s21_decimal dst) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 32; j++) {
             if ((dst.bits[i] & (1 << j)) != 0) {
-                x += (1 << j) % 10;
+                x += (1 << j) % 100;
             }
         }
     }
@@ -293,13 +297,6 @@ int s21_negate(s21_decimal value, s21_decimal *result) {
 
     printf("До операции\n%s\n", inside(value));
 
-    // if ((value.bits[3] >> 31) & 1) {
-    //     value.bits[3] << 1;
-    //     value.bits[3] >> 1;
-    // } else {
-    //     value.bits[3] ^= 0x80000000;
-    // }
-
     value.bits[3] ^= (1 << 31);
 
     printf("После операции\n%s\n", inside(value));
@@ -313,7 +310,15 @@ int s21_negate(s21_decimal value, s21_decimal *result) {
 
 int s21_round(s21_decimal value, s21_decimal *result) {
 
+    int scale = find_scale(value); /* Извлекаем степень */
 
+    s21_decimal support = value; /* Создаем копию value */
+
+    support.bits[3] = 0; /* Очищаем bits 3 */
+
+    // support = 
+
+    // *result = 
 
     return 0;
 }
@@ -322,15 +327,171 @@ int s21_round(s21_decimal value, s21_decimal *result) {
 
 int find_scale (s21_decimal value) {
 
-    // 10000000000111110000000000000000
+    int mask = 255; // 11111111 * xxxxxxx
 
-    // value.bits[3] = 0x80990000;
+    return ((value.bits[3] >> 16) & mask);
 
-    int scale = 0;
+    /*
 
-    scale = ((value.bits[3] ^ (1 << 31)) >> 16);
+    11111111 11111111 11111111 11111111 >> 16
+    00000000 00000000 11111111 11111111 & 00000000 00000000 00000000 11111111
+    
+    */
 
-    printf("Степень числа: %d\n", scale);
+}
 
-    return scale;
+s21_big_decimal binary_div (s21_big_decimal value_1, s21_big_decimal value_2, s21_big_decimal* OSTATOK) {
+   
+    s21_big_decimal result;
+
+    s21_big_decimal part_remainder = {0};
+
+    s21_big_decimal quotient = {0};
+
+    if (s21_decimal_equal_zero(value_1.decimals[0]) && s21_decimal_equal_zero(value_1.decimals[1])) { /* Может быть получится заменить 
+    s21_decimal_equal_zero на s21_big_decimal_binary_compare если не найдется ни одного бита то значит что все биты равны 0 */
+        ;
+    } else if (s21_big_decimal_binary_compare(value_1, value_2) == -1) {
+        ;
+    } else {
+        int shift_1 = find_pos_most_major_bit(value_1.decimals[1]);
+        
+        if (shift_1 == -1) {
+            shift_1 = find_pos_most_major_bit(value_1.decimals[0]);
+        } else {
+            shift_1 += 128;
+        }
+
+        int shift_2 = find_pos_most_major_bit(value_2.decimals[1]);
+        if (shift_2 == -1) {
+            shift_2 = find_pos_most_major_bit(value_2.decimals[0]);
+        } else {
+            shift_2 += 128;
+        }
+
+        int shift_general = shift_1 - shift_2;
+
+    }
+
+    return result;
+}
+
+/* Функция вычисляет равен ли биг децимал нулю */
+int s21_decimal_equal_zero (s21_decimal value) {
+
+    int result = value.bits[0] == 0 && value.bits[1] == 0 && value.bits[2] == 0 && value.bits[3] == 0;
+
+    return result;
+}
+
+/* Функция находит позицию самого старшего бита */
+int find_pos_most_major_bit (s21_decimal value) {
+    
+    int result = -1;
+
+    for (int i = 128 - 1; i >= 0; i--) { // Проходим с конца числа и находим первое вхождение бита | --> 010100 | 
+        if (s21_decimal_is_set_bit(value, i)) {
+            result = i;
+            break;
+        }
+    }
+    
+    return result;
+}
+
+int s21_decimal_is_set_bit(s21_decimal decimal, int index) {
+    return find_pos_bit(decimal.bits[index / 32], index % 32);
+}
+
+/* Проверка на то, что установлен ли бит на определённой позиции */
+int find_pos_bit (int value, int pos) {
+    
+    int result = value & (1 << pos);
+    
+    if (result != 0) {
+        result = 1;
+    }
+
+    return result;
+}
+
+int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
+    if (result == NULL) return puts("erorr");
+    zero(result);
+    if (checking_3_bytes(value_1) || checking_3_bytes(value_2)) return puts("erorr");
+    if (checking_for_zero(value_2)) return 3;
+    
+    s21_big_decimal divisible = bringing_to_big(value_1);
+    s21_big_decimal deductible = bringing_to_big(value_2);
+    s21_big_decimal reduced = {0};
+    s21_big_decimal temp_res = {0};
+
+    if (big_degree(divisible) < big_degree(deductible)) {
+        reduction_of_degrees(&divisible, &deductible);
+    }
+    int deg = abs(big_degree(deductible) - big_degree(divisible));
+    divisible.bits[7] = 0;
+    deductible.bits[7] = 0;
+    
+    int bit_pos = used_bits(divisible);
+    while (bit_pos >= 0) {
+
+        if (unsigned_comparison(divisible, deductible) & 20)  {
+            SAR(&reduced, divisible, deductible, &bit_pos, &temp_res);
+            sub(reduced, deductible, &reduced);
+        } else { 
+            mul_by_10(&divisible);
+            bit_pos = used_bits(divisible);
+        }
+        if (bit_pos <= 0 && used_bits(reduced) != 0 && (unsigned_comparison(reduced, deductible) >> 5 & 1) && used_bits(divisible) < 210) {
+            mul_by_10(&divisible);
+            bit_pos = used_bits(divisible);
+            big_zero(&temp_res);
+            big_zero(&reduced);
+        }
+    }
+    //if (temp_res.bits[6] > 0) return 1;
+    //inside3(temp_res);
+    printf("%d\n", deg + big_degree(divisible));
+    int z = 0;
+    while(used_bits(temp_res) > 96 || abs(deg + big_degree(divisible)) > 28) {
+        div_by_10(&temp_res);
+        deg--;
+        if (abs(deg + big_degree(divisible)) == 29) z = last_number(temp_res, 2);
+    }
+    s21_big_decimal temp_res1 = {{1, 0, 0, 0, 0, 0, 0, 0}};
+    if ((z % 20 > 5 && z % 20 < 10) || (z % 20 >= 14 && z % 20 <= 19)) {
+        add(temp_res, temp_res1, &temp_res);
+    }
+   //inside3(temp_res);
+    printf("%d\n", deg + big_degree(divisible));
+
+    s21_big_decimal temp_res_big = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+
+    if (deg + big_degree(divisible) < 0) return 1;
+
+    *result = reducing_to_less(temp_res);
+    result -> bits[3] |= abs(deg + big_degree(divisible)) << 16;             
+    if (check_sign(value_1) ^ check_sign(value_2)) result -> bits[3] |= (1 << 31);
+    
+    return 0; 
+}
+
+/* 
+ * int = 32
+ * short = 16
+ * char = 8
+ * degree = 
+*/
+int checking_3_bytes(s21_decimal dst) {
+    char c = dst.bits[3] >> 24;
+    int degree_value = degree(dst);
+    short z = dst.bits[3];
+    int result = 0;
+
+    if ((c != 0 && c != 128) || degree_value > 28 || degree_value < 0 || z != 0) {
+        result = 1;
+    }
+    
+    return result;
 }
